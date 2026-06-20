@@ -28,7 +28,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
           <span className="grid h-10 w-10 place-items-center rounded-md bg-blood text-white">
             <Dumbbell className="h-5 w-5" />
           </span>
-          <span className="text-xl font-black">fitnessapp</span>
+          <span className="text-xl font-black">Apex</span>
         </Link>
         <nav className="mt-8 space-y-1">
           {nav.map((item) => (

@@ -10,8 +10,8 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
-  title: "fitnessapp",
-  description: "Premium workout and nutrition planner"
+  title: "Apex",
+  description: "Personalised training, nutrition and progress tracking"
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

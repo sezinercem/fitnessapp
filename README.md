@@ -1,4 +1,4 @@
-# fitnessapp
+# Apex
 
 Premium black-and-red full-stack fitness app built with Next.js, TypeScript, Tailwind CSS, Supabase Auth, Supabase database, server actions, RLS policies, and Zod validation.
 

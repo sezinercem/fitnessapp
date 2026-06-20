@@ -58,7 +58,7 @@ export default async function DashboardPage() {
           </div>
         </Card>
       ) : (
-        <EmptyState title="Finish onboarding" body="Answer a few questions so fitnessapp can generate your first weekly plan." action={<LinkButton href="/onboarding">Start onboarding</LinkButton>} />
+        <EmptyState title="Finish onboarding" body="Answer a few questions so Apex can generate your first weekly plan." action={<LinkButton href="/onboarding">Start onboarding</LinkButton>} />
       )}
 
       <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">

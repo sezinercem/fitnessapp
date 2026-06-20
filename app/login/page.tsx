@@ -17,7 +17,7 @@ export default function LoginPage() {
   return (
     <main className="grid min-h-screen place-items-center bg-ink px-4 py-10">
       <Card className="w-full max-w-md">
-        <p className="text-sm font-bold uppercase tracking-[0.2em] text-ember">fitnessapp</p>
+        <p className="text-sm font-bold uppercase tracking-[0.2em] text-ember">Apex</p>
         <h1 className="mt-3 text-3xl font-black">Log in</h1>
         <p className="mt-2 text-sm text-zinc-400">Continue to your training dashboard.</p>
         <div className="mt-6">
