@@ -2,17 +2,19 @@ import { Plus, Save, Trash2 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { Button, Card, EmptyState } from "@/components/ui";
 import { ConfirmButton } from "@/components/confirm-button";
-import { addDayAction, addExerciseAction, addPlannedExerciseAction, completeWorkoutAction, createBlankPlanAction, createPlanFromTemplateAction, deleteExerciseAction, deletePlanAction, deletePlannedExerciseAction, regenerateWeeklyPlanAction, updateDayAction, updateExerciseAction, updatePlanAction, updateTrainingDayAction } from "@/lib/actions";
+import { ExerciseAddForm } from "@/components/workout/exercise-add-form";
+import { addDayAction, addExerciseAction, completeWorkoutAction, createBlankPlanAction, createPlanFromTemplateAction, deleteExerciseAction, deletePlanAction, deletePlannedExerciseAction, regenerateWeeklyPlanAction, updateDayAction, updateExerciseAction, updatePlanAction, updateTrainingDayAction } from "@/lib/actions";
 import { getAuthedData, getGuidedData } from "@/lib/data";
 import { planTemplates } from "@/lib/sample-data";
 import type { TrainingDay, WeeklyTrainingPlan, WorkoutDay } from "@/lib/types";
+import type { WorkoutCategory } from "@/lib/exercise-catalog";
 
 export default async function PlanPage() {
   const { plan } = await getAuthedData();
   const { weeklyPlan } = await getGuidedData();
   const days = ((plan?.workout_days ?? []) as WorkoutDay[]).sort((a, b) => a.sort_order - b.sort_order);
   const guidedPlan = weeklyPlan as WeeklyTrainingPlan | null;
-const guidedDays = ((guidedPlan?.training_days ?? []) as TrainingDay[]).sort((a, b) => a.day_index - b.day_index);
+  const guidedDays = ((guidedPlan?.training_days ?? []) as TrainingDay[]).sort((a, b) => a.day_index - b.day_index);
   const weekDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
   return (
@@ -54,6 +56,17 @@ const guidedDays = ((guidedPlan?.training_days ?? []) as TrainingDay[]).sort((a,
                       <option value="false">Training day</option>
                       <option value="true">Rest/recovery day</option>
                     </select>
+                    <select name="workoutCategory" defaultValue={day.workout_category ?? "full_body"}>
+                      <option value="push">Push</option>
+                      <option value="pull">Pull</option>
+                      <option value="legs">Legs</option>
+                      <option value="upper">Upper Body</option>
+                      <option value="lower">Lower Body</option>
+                      <option value="full_body">Full Body</option>
+                      <option value="cardio">Cardio</option>
+                      <option value="mobility">Mobility</option>
+                      <option value="core">Core</option>
+                    </select>
                     <input name="trainingFocus" defaultValue={day.training_focus} placeholder="Training focus, e.g. Lower Body Strength" />
                     <input name="estimatedDuration" type="number" defaultValue={day.estimated_duration} placeholder="Estimated duration, e.g. 45" />
                     <textarea name="whyItExists" defaultValue={day.why_it_exists} placeholder="Explain why this day exists, e.g. Builds stronger legs and glutes." />
@@ -84,17 +97,7 @@ const guidedDays = ((guidedPlan?.training_days ?? []) as TrainingDay[]).sort((a,
                       </div>
                     ))}
                   </div>
-                  <form action={addPlannedExerciseAction} className="mt-4 grid gap-3 rounded-lg border border-line bg-black p-4 md:grid-cols-2">
-                    <input type="hidden" name="trainingDayId" value={day.id} />
-                    <input name="exerciseName" placeholder="Add exercise name, e.g. Dumbbell Bench Press" required />
-                    <input name="muscleGroups" placeholder="Main muscles, e.g. Chest, shoulders, triceps" />
-                    <input name="sets" type="number" defaultValue="3" placeholder="Sets, e.g. 3" />
-                    <input name="reps" placeholder="Add reps, e.g. 10" defaultValue="10" />
-                    <input name="targetWeight" placeholder="Add weight, e.g. 40kg" />
-                    <input name="restSeconds" type="number" defaultValue="60" placeholder="Rest time, e.g. 60" />
-                    <textarea name="notes" placeholder="Write notes, e.g. Felt strong today" className="md:col-span-2" />
-                    <Button className="md:col-span-2"><Plus className="h-4 w-4" />Add exercise</Button>
-                  </form>
+                  {!day.is_rest_day ? <ExerciseAddForm trainingDayId={day.id} category={(day.workout_category ?? "full_body") as WorkoutCategory} /> : null}
                 </div>
               </div>
             </Card>

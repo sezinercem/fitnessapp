@@ -25,6 +25,7 @@ import {
 } from "@/lib/validators";
 import { planTemplates } from "@/lib/sample-data";
 import { buildGeneratedPlan, buildNutrition } from "@/lib/onboarding-generator";
+import { getExerciseCategory, isExerciseCompatible, normaliseCategory } from "@/lib/exercise-catalog";
 
 async function currentUser() {
   const supabase = await createClient();
@@ -94,6 +95,9 @@ export async function completeOnboardingAction(formData: FormData) {
     mainGoal: formData.get("mainGoal"),
     experienceLevel: formData.get("experienceLevel"),
     selectedTrainingDays: formData.get("selectedTrainingDays"),
+    routineType: formData.get("routineType"),
+    splitPreference: formData.get("splitPreference"),
+    customSplit: formData.get("customSplit"),
     equipmentAvailable: formData.get("equipmentAvailable"),
     sessionLength: formData.get("sessionLength"),
     nutritionGoal: formData.get("nutritionGoal"),
@@ -110,6 +114,9 @@ export async function completeOnboardingAction(formData: FormData) {
     experience_level: parsed.experienceLevel,
     training_days_per_week: parsed.selectedTrainingDays.length,
     selected_training_days: parsed.selectedTrainingDays,
+    routine_type: parsed.routineType,
+    split_preference: parsed.splitPreference,
+    custom_split: parsed.customSplit ? JSON.parse(parsed.customSplit) : {},
     equipment_available: parsed.equipmentAvailable,
     session_length: parsed.sessionLength,
     nutrition_goal: parsed.nutritionGoal,
@@ -155,6 +162,7 @@ export async function completeOnboardingAction(formData: FormData) {
         day_of_week: day.day,
         day_index: day.dayIndex,
         training_focus: day.focus,
+        workout_category: day.category,
         is_rest_day: day.isRestDay,
         estimated_duration: day.estimatedDuration,
         why_it_exists: day.whyItExists,
@@ -170,6 +178,7 @@ export async function completeOnboardingAction(formData: FormData) {
         training_day_id: trainingDay.id,
         exercise_name: exercise.name,
         muscle_groups: exercise.muscleGroups,
+        workout_category: exercise.workoutCategory,
         sets: exercise.sets,
         reps: exercise.reps,
         target_weight: exercise.targetWeight,
@@ -234,6 +243,9 @@ export async function regenerateWeeklyPlanAction() {
     mainGoal: answers.main_goal,
     experienceLevel: answers.experience_level,
     selectedTrainingDays: answers.selected_training_days ?? [],
+    routineType: answers.routine_type ?? "Use Apex recommendation",
+    splitPreference: answers.split_preference ?? "recommended",
+    customSplit: JSON.stringify(answers.custom_split ?? {}),
     equipmentAvailable: answers.equipment_available,
     sessionLength: answers.session_length,
     nutritionGoal: answers.nutrition_goal,
@@ -269,6 +281,7 @@ export async function regenerateWeeklyPlanAction() {
         day_of_week: day.day,
         day_index: day.dayIndex,
         training_focus: day.focus,
+        workout_category: day.category,
         is_rest_day: day.isRestDay,
         estimated_duration: day.estimatedDuration,
         why_it_exists: day.whyItExists,
@@ -284,6 +297,7 @@ export async function regenerateWeeklyPlanAction() {
         training_day_id: trainingDay.id,
         exercise_name: exercise.name,
         muscle_groups: exercise.muscleGroups,
+        workout_category: exercise.workoutCategory,
         sets: exercise.sets,
         reps: exercise.reps,
         target_weight: exercise.targetWeight,
@@ -730,6 +744,7 @@ export async function updateTrainingDayAction(dayId: string, formData: FormData)
   const { supabase, user } = await currentUser();
   const parsed = trainingDaySchema.parse({
     trainingFocus: formData.get("trainingFocus"),
+    workoutCategory: formData.get("workoutCategory"),
     dayOfWeek: formData.get("dayOfWeek"),
     isRestDay: formData.get("isRestDay") === "true",
     estimatedDuration: formData.get("estimatedDuration"),
@@ -740,6 +755,7 @@ export async function updateTrainingDayAction(dayId: string, formData: FormData)
     day_of_week: parsed.dayOfWeek,
     day_index: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].indexOf(parsed.dayOfWeek),
     training_focus: parsed.trainingFocus,
+    workout_category: parsed.workoutCategory,
     is_rest_day: parsed.isRestDay,
     estimated_duration: parsed.estimatedDuration,
     why_it_exists: parsed.whyItExists,
@@ -755,17 +771,30 @@ export async function addPlannedExerciseAction(formData: FormData) {
     trainingDayId: formData.get("trainingDayId"),
     exerciseName: formData.get("exerciseName"),
     muscleGroups: formData.get("muscleGroups"),
+    confirmMismatch: formData.get("confirmMismatch") === "on",
     sets: formData.get("sets"),
     reps: formData.get("reps"),
     targetWeight: formData.get("targetWeight"),
     restSeconds: formData.get("restSeconds"),
     notes: formData.get("notes")
   });
+  const { data: day } = await supabase
+    .from("training_days")
+    .select("workout_category")
+    .eq("id", parsed.trainingDayId)
+    .eq("user_id", user.id)
+    .single();
+  const dayCategory = normaliseCategory(day?.workout_category ?? "full_body");
+  const exerciseCategory = getExerciseCategory(parsed.exerciseName) ?? dayCategory;
+  if (!isExerciseCompatible(parsed.exerciseName, dayCategory) && !parsed.confirmMismatch) {
+    throw new Error(`${parsed.exerciseName} is usually not a ${dayCategory} exercise. Confirm mismatch to add it.`);
+  }
   await supabase.from("planned_exercises").insert({
     user_id: user.id,
     training_day_id: parsed.trainingDayId,
     exercise_name: parsed.exerciseName,
     muscle_groups: parsed.muscleGroups.split(",").map((item) => item.trim()).filter(Boolean),
+    workout_category: exerciseCategory,
     sets: parsed.sets,
     reps: parsed.reps,
     target_weight: parsed.targetWeight,

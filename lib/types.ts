@@ -91,6 +91,9 @@ export type OnboardingAnswers = {
   experience_level: string;
   training_days_per_week: number;
   selected_training_days?: string[] | null;
+  routine_type?: string | null;
+  split_preference?: string | null;
+  custom_split?: Record<string, string> | null;
   equipment_available: string;
   session_length: number;
   nutrition_goal: string;
@@ -106,6 +109,7 @@ export type PlannedExercise = {
   training_day_id: string;
   exercise_name: string;
   muscle_groups: string[];
+  workout_category?: string | null;
   sets: number;
   reps: string;
   target_weight: string | null;
@@ -120,6 +124,7 @@ export type TrainingDay = {
   day_of_week: string;
   day_index: number;
   training_focus: string;
+  workout_category?: string | null;
   is_rest_day: boolean;
   estimated_duration: number;
   why_it_exists: string;

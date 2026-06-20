@@ -28,6 +28,7 @@ Run the SQL migrations in order from `supabase/migrations` in your Supabase SQL 
 2. `002_guided_onboarding_tracking.sql`
 3. `003_selected_training_days.sql`
 4. `004_workout_sessions_progressive_overload.sql`
+5. `005_exercise_categories_and_split_preferences.sql`
 
 They create:
 

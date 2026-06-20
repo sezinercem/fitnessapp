@@ -19,6 +19,14 @@ const steps = [
     ]
   },
   {
+    title: "Choose your routine style",
+    helper: "Use the Apex recommendation, or choose the focus for each training day yourself.",
+    fields: [
+      { name: "routineType", label: "Routine type", options: ["Use Apex recommendation", "Build my own routine"] },
+      { name: "splitPreference", label: "Recommended split", options: ["recommended", "ppl_upper_lower", "upper_lower_ppl", "full_body_cardio"] }
+    ]
+  },
+  {
     title: "What equipment do you have?",
     helper: "Your plan will only use exercises that match your setup.",
     fields: [{ name: "equipmentAvailable", label: "Equipment available", options: ["Bodyweight only", "Dumbbells", "Barbell", "Full gym", "Home gym", "Resistance bands"] }]
@@ -39,6 +47,17 @@ const steps = [
 ];
 
 const weekDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+const focusOptions = [
+  ["push", "Push"],
+  ["pull", "Pull"],
+  ["legs", "Legs"],
+  ["upper", "Upper Body"],
+  ["lower", "Lower Body"],
+  ["full_body", "Full Body"],
+  ["cardio", "Cardio"],
+  ["mobility", "Mobility"],
+  ["rest", "Rest"]
+];
 
 export function OnboardingForm({ action }: { action: (formData: FormData) => Promise<void> }) {
   const [step, setStep] = useState(0);
@@ -46,6 +65,16 @@ export function OnboardingForm({ action }: { action: (formData: FormData) => Pro
     mainGoal: "Build muscle",
     experienceLevel: "Beginner",
     selectedTrainingDays: "Monday,Tuesday,Thursday,Saturday",
+    routineType: "Use Apex recommendation",
+    splitPreference: "recommended",
+    customSplit: "{}",
+    focus_Monday: "push",
+    focus_Tuesday: "pull",
+    focus_Wednesday: "rest",
+    focus_Thursday: "legs",
+    focus_Friday: "upper",
+    focus_Saturday: "mobility",
+    focus_Sunday: "rest",
     equipmentAvailable: "Dumbbells",
     sessionLength: "45",
     nutritionGoal: "Muscle gain",
@@ -58,6 +87,7 @@ export function OnboardingForm({ action }: { action: (formData: FormData) => Pro
   const progress = Math.round(((step + 1) / steps.length) * 100);
   const setValue = (name: string, value: string) => setValues((current) => ({ ...current, [name]: value }));
   const selectedDays = values.selectedTrainingDays.split(",").filter(Boolean);
+  const customSplit = Object.fromEntries(selectedDays.map((day) => [day, values[`focus_${day}`] === "rest" ? "mobility" : values[`focus_${day}`] || "full_body"]));
   const toggleDay = (day: string) => {
     const next = selectedDays.includes(day) ? selectedDays.filter((item) => item !== day) : [...selectedDays, day];
     setValue("selectedTrainingDays", next.join(","));
@@ -66,7 +96,7 @@ export function OnboardingForm({ action }: { action: (formData: FormData) => Pro
 
   return (
     <form action={action} className="mx-auto max-w-3xl">
-      {Object.entries(values).map(([name, value]) => (
+      {Object.entries({ ...values, customSplit: JSON.stringify(customSplit) }).map(([name, value]) => (
         <input key={name} type="hidden" name={name} value={value} />
       ))}
       <div className="mb-6">
@@ -96,7 +126,9 @@ export function OnboardingForm({ action }: { action: (formData: FormData) => Pro
               {field.label}
               <select value={values[field.name]} onChange={(event) => setValue(field.name, event.target.value)} required>
                 {field.options.map((option) => (
-                  <option key={option} value={field.name === "sessionLength" ? option.split(" ")[0] : option}>{option}{field.name === "sessionLength" ? " minutes" : ""}</option>
+                  <option key={option} value={field.name === "sessionLength" ? option.split(" ")[0] : option}>
+                    {field.name === "sessionLength" ? `${option} minutes` : splitLabel(option)}
+                  </option>
                 ))}
               </select>
             </label>
@@ -128,7 +160,33 @@ export function OnboardingForm({ action }: { action: (formData: FormData) => Pro
             </div>
           ) : null}
 
-          {step === 4 ? (
+          {step === 2 ? (
+            <div className="grid gap-4">
+              {values.routineType === "Use Apex recommendation" ? (
+                <div className="rounded-lg border border-line bg-black p-4">
+                  <p className="font-black">Apex will keep exercises matched to the day type.</p>
+                  <p className="mt-1 text-sm text-zinc-400">Push days only use push exercises. Pull days only use pull exercises. Rest days never include strength workouts.</p>
+                </div>
+              ) : (
+                <div className="rounded-lg border border-line bg-black p-4">
+                  <p className="font-black">Pick the focus for each selected day</p>
+                  <p className="mt-1 text-sm text-zinc-400">Apex will filter exercises from the matching category.</p>
+                  <div className="mt-4 grid gap-3">
+                    {selectedDays.map((day) => (
+                      <label key={day} className="grid gap-2 text-sm font-bold text-zinc-300 sm:grid-cols-[140px_1fr] sm:items-center">
+                        {day}
+                        <select value={values[`focus_${day}`]} onChange={(event) => setValue(`focus_${day}`, event.target.value)}>
+                          {focusOptions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                        </select>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : null}
+
+          {step === 5 ? (
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="space-y-2 text-sm font-bold text-zinc-300">Current weight<input value={values.currentWeight} onChange={(event) => setValue("currentWeight", event.target.value)} type="number" step="0.1" placeholder="Enter your current weight, e.g. 82kg" required /></label>
               <label className="space-y-2 text-sm font-bold text-zinc-300">Target weight<input value={values.targetWeight} onChange={(event) => setValue("targetWeight", event.target.value)} type="number" step="0.1" placeholder="Enter your target weight, e.g. 78kg" required /></label>
@@ -153,4 +211,14 @@ export function OnboardingForm({ action }: { action: (formData: FormData) => Pro
       </Card>
     </form>
   );
+}
+
+function splitLabel(value: string) {
+  const labels: Record<string, string> = {
+    recommended: "Recommended split",
+    ppl_upper_lower: "Push / Pull / Legs / Upper / Lower",
+    upper_lower_ppl: "Upper / Lower / Push / Pull / Legs",
+    full_body_cardio: "Full Body 3x + Cardio 2x"
+  };
+  return labels[value] ?? value;
 }

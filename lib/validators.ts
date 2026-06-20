@@ -80,6 +80,9 @@ export const onboardingSchema = z.object({
     if (typeof value === "string") return value.split(",").map((day) => day.trim()).filter(Boolean);
     return [];
   }, z.array(z.enum(["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"])).min(1).max(7)),
+  routineType: z.enum(["Use Apex recommendation", "Build my own routine"]).default("Use Apex recommendation"),
+  splitPreference: z.enum(["recommended", "ppl_upper_lower", "upper_lower_ppl", "full_body_cardio"]).default("recommended"),
+  customSplit: text(1000).optional(),
   equipmentAvailable: z.enum(["Bodyweight only", "Dumbbells", "Barbell", "Full gym", "Home gym", "Resistance bands"]),
   sessionLength: z.coerce.number().int().min(20).max(90),
   nutritionGoal: z.enum(["Fat loss", "Maintenance", "Muscle gain", "Performance"]),
@@ -148,6 +151,7 @@ export const easyMealSchema = z.object({
 
 export const trainingDaySchema = z.object({
   trainingFocus: requiredText(100),
+  workoutCategory: z.enum(["push", "pull", "legs", "upper", "lower", "full_body", "cardio", "mobility", "core"]).default("full_body"),
   dayOfWeek: z.enum(["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]),
   isRestDay: z.coerce.boolean(),
   estimatedDuration: z.coerce.number().int().min(10).max(180),
@@ -159,6 +163,7 @@ export const plannedExerciseSchema = z.object({
   trainingDayId: z.string().uuid(),
   exerciseName: requiredText(100),
   muscleGroups: text(200),
+  confirmMismatch: z.coerce.boolean().optional(),
   sets: z.coerce.number().int().min(1).max(12),
   reps: text(40),
   targetWeight: text(50).optional(),

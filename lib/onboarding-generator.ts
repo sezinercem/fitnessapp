@@ -1,85 +1,104 @@
 import type { z } from "zod";
 import type { onboardingSchema } from "@/lib/validators";
+import { categoryExplanations, categoryLabels, getExercisesForCategory, normaliseCategory, type WorkoutCategory } from "@/lib/exercise-catalog";
 
 type Answers = z.infer<typeof onboardingSchema>;
 
 const week = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
-const focusByGoal: Record<string, string[]> = {
-  "Build muscle": ["Upper Body Hypertrophy", "Lower Body Strength", "Push Muscle Builder", "Pull Muscle Builder", "Legs and Core", "Arms and Conditioning", "Mobility Reset"],
-  "Lose fat": ["Full Body Conditioning", "Lower Body Burn", "Upper Body Circuit", "Cardio Strength Mix", "Metabolic Full Body", "Core and Intervals", "Recovery Walk"],
-  "Get stronger": ["Upper Body Strength", "Lower Body Strength", "Press and Pull Power", "Squat Pattern Strength", "Posterior Chain", "Heavy Full Body", "Recovery Mobility"],
-  "Improve fitness": ["Full Body Fitness", "Cardio Base", "Upper Body Endurance", "Lower Body Endurance", "Core Conditioning", "Hybrid Circuit", "Mobility"],
-  "Hybrid athlete": ["Strength and Run Prep", "Upper Strength", "Conditioning Intervals", "Lower Strength", "Athletic Full Body", "Zone 2 Endurance", "Recovery"],
-  "General health": ["Full Body Basics", "Walk and Core", "Upper Body Basics", "Lower Body Basics", "Mobility and Balance", "Light Conditioning", "Rest"]
+const splitByTrainingDays: Record<number, WorkoutCategory[]> = {
+  1: ["full_body"],
+  2: ["full_body", "full_body"],
+  3: ["full_body", "upper", "full_body"],
+  4: ["upper", "lower", "upper", "lower"],
+  5: ["push", "pull", "legs", "upper", "mobility"],
+  6: ["push", "pull", "legs", "push", "pull", "legs"],
+  7: ["push", "pull", "legs", "upper", "lower", "cardio", "mobility"]
 };
 
-const splitByTrainingDays: Record<number, string[]> = {
-  1: ["Full Body"],
-  2: ["Full Body A", "Full Body B"],
-  3: ["Full Body", "Upper-Lower Strength", "Hybrid Conditioning"],
-  4: ["Upper Body", "Lower Body", "Upper Strength", "Lower Strength"],
-  5: ["Push", "Pull", "Legs", "Upper Accessories", "Conditioning"],
-  6: ["Push A", "Pull A", "Legs A", "Push B", "Pull B", "Legs B"],
-  7: ["Chest and Triceps", "Back and Biceps", "Leg Strength", "Shoulders and Core", "Posterior Chain", "Conditioning", "Mobility Strength"]
-};
-
-const exerciseBank: Record<string, string[]> = {
-  "Bodyweight only": ["Push-up", "Bodyweight squat", "Reverse lunge", "Glute bridge", "Plank", "Mountain climber", "Dead bug"],
-  Dumbbells: ["Dumbbell bench press", "Goblet squat", "One-arm dumbbell row", "Dumbbell Romanian deadlift", "Dumbbell shoulder press", "Dumbbell lunge", "Farmer carry"],
-  Barbell: ["Bench press", "Back squat", "Barbell row", "Romanian deadlift", "Overhead press", "Deadlift", "Front squat"],
-  "Full gym": ["Bench press", "Lat pulldown", "Leg press", "Seated row", "Cable pressdown", "Hamstring curl", "Machine chest press"],
-  "Home gym": ["Dumbbell press", "Pull-up or band row", "Goblet squat", "Romanian deadlift", "Kettlebell swing", "Split squat", "Plank"],
-  "Resistance bands": ["Band chest press", "Band row", "Band squat", "Band pull-apart", "Band Romanian deadlift", "Band curl", "Pallof press"]
+const fiveDayPreferences: Record<string, WorkoutCategory[]> = {
+  recommended: ["push", "pull", "legs", "upper", "mobility"],
+  ppl_upper_lower: ["push", "pull", "legs", "upper", "lower"],
+  upper_lower_ppl: ["upper", "lower", "push", "pull", "legs"],
+  full_body_cardio: ["full_body", "cardio", "full_body", "cardio", "full_body"]
 };
 
 export function buildGeneratedPlan(answers: Answers) {
   const selectedDays = answers.selectedTrainingDays;
-  const split = splitByTrainingDays[selectedDays.length] ?? focusByGoal[answers.mainGoal] ?? splitByTrainingDays[3];
-  const exercises = exerciseBank[answers.equipmentAvailable] ?? exerciseBank["Bodyweight only"];
+  const customSplit = parseCustomSplit(answers.customSplit);
+  const selectedCategories =
+    answers.routineType === "Build my own routine"
+      ? selectedDays.map((day) => customSplit[day] ?? "full_body")
+      : recommendedSplit(answers);
   const trainingDays = new Set(selectedDays.map((day) => week.indexOf(day)));
   let workoutIndex = 0;
 
   return week.map((day, index) => {
     const isWorkout = trainingDays.has(index);
-    const focus = isWorkout ? split[workoutIndex % split.length] : "Rest Day";
+    const category = isWorkout ? selectedCategories[workoutIndex] ?? "full_body" : "mobility";
+    const focus = isWorkout ? categoryLabels[category] : "Rest Day";
     const baseSets = answers.experienceLevel === "Advanced" ? 4 : answers.experienceLevel === "Intermediate" ? 3 : 2;
     const count = isWorkout ? Math.min(6, Math.max(3, Math.round(answers.sessionLength / 12))) : 0;
-    const currentWorkoutIndex = workoutIndex;
     if (isWorkout) workoutIndex += 1;
+    const catalogExercises = isWorkout ? getExercisesForCategory(category, answers.equipmentAvailable, count) : [];
 
     return {
       day,
       dayIndex: index,
       focus,
-      isRestDay: !isWorkout,
+      category,
+      isRestDay: !isWorkout || category === "mobility",
       estimatedDuration: isWorkout ? answers.sessionLength : 20,
       whyItExists: isWorkout
-        ? `${focus} moves you toward ${answers.mainGoal.toLowerCase()} with a split matched to your selected training days.`
+        ? `${categoryExplanations[category]} This day matches your selected split and equipment.`
         : "Rest days help you adapt, reduce soreness, and come back stronger for the next session.",
-      mainMuscles: isWorkout ? musclesForFocus(focus) : ["Recovery", "Mobility"],
+      mainMuscles: isWorkout ? musclesForCategory(category) : ["Recovery", "Mobility"],
       recoveryNotes: isWorkout ? "Keep two reps in reserve on most sets and stop if form breaks." : "Mobility recommendation: 10 minutes of hips, upper back and hamstrings. Walking target: 7,000-10,000 steps. Recovery tips: hydrate, sleep well, and keep stress low.",
-      exercises: isWorkout
-        ? Array.from({ length: count }, (_, exerciseIndex) => ({
-            name: exercises[(currentWorkoutIndex + exerciseIndex) % exercises.length],
-            muscleGroups: musclesForFocus(focus),
-            sets: baseSets,
-            reps: answers.mainGoal === "Get stronger" ? "5" : "8-12",
-            targetWeight: answers.equipmentAvailable === "Bodyweight only" ? "bodyweight" : "Choose a controlled weight",
-            restSeconds: answers.mainGoal === "Get stronger" ? 120 : 75,
-            notes: "Start light enough to own every rep."
-          }))
-        : []
+      exercises: catalogExercises.map((exercise) => ({
+        name: exercise.name,
+        muscleGroups: [exercise.primary_muscle_group, ...exercise.secondary_muscle_groups],
+        workoutCategory: exercise.workout_category,
+        sets: baseSets,
+        reps: answers.mainGoal === "Get stronger" ? "5" : "8-12",
+        targetWeight: answers.equipmentAvailable === "Bodyweight only" ? "bodyweight" : "Choose a controlled weight",
+        restSeconds: answers.mainGoal === "Get stronger" ? 120 : 75,
+        notes: exercise.instructions[0] ?? "Start light enough to own every rep."
+      }))
     };
   });
 }
 
-function musclesForFocus(focus: string) {
-  if (focus.includes("Upper") || focus.includes("Push") || focus.includes("Chest")) return ["Chest", "Shoulders", "Triceps"];
-  if (focus.includes("Pull") || focus.includes("Back")) return ["Back", "Biceps", "Rear delts"];
-  if (focus.includes("Leg") || focus.includes("Lower") || focus.includes("Posterior")) return ["Quads", "Glutes", "Hamstrings"];
-  if (focus.includes("Core") || focus.includes("Mobility")) return ["Core", "Hips", "Mobility"];
+function recommendedSplit(answers: Answers): WorkoutCategory[] {
+  if (answers.selectedTrainingDays.length === 5) {
+    return fiveDayPreferences[answers.splitPreference] ?? fiveDayPreferences.recommended;
+  }
+  return splitByTrainingDays[answers.selectedTrainingDays.length] ?? splitByTrainingDays[3];
+}
+
+function parseCustomSplit(value: string | undefined) {
+  try {
+    return JSON.parse(value || "{}") as Record<string, WorkoutCategory>;
+  } catch {
+    return {};
+  }
+}
+
+function musclesForCategory(category: WorkoutCategory) {
+  if (category === "push") return ["Chest", "Shoulders", "Triceps"];
+  if (category === "pull") return ["Back", "Biceps", "Rear delts"];
+  if (category === "legs" || category === "lower") return ["Quads", "Glutes", "Hamstrings", "Calves"];
+  if (category === "upper") return ["Chest", "Back", "Shoulders", "Arms"];
+  if (category === "cardio") return ["Heart", "Lungs", "Legs"];
+  if (category === "mobility") return ["Hips", "Upper back", "Hamstrings"];
+  if (category === "core") return ["Core", "Obliques", "Lower back"];
   return ["Full body", "Core"];
+}
+
+export function validateGeneratedPlan(days: ReturnType<typeof buildGeneratedPlan>) {
+  return days.map((day) => ({
+    ...day,
+    exercises: day.isRestDay ? [] : day.exercises.filter((exercise) => normaliseCategory(day.focus) === "upper" ? ["upper", "push", "pull"].includes(exercise.workoutCategory) : exercise.workoutCategory === day.category)
+  }));
 }
 
 export function buildNutrition(answers: Answers) {
