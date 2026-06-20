@@ -26,7 +26,7 @@ export default async function ProgressPage() {
   return (
     <AppShell>
       <p className="text-sm font-bold uppercase tracking-[0.2em] text-ember">Progress</p>
-      <h1 className="mt-2 text-4xl font-black">Proof that training is working</h1>
+      <h1 className="mt-2 text-3xl font-black sm:text-4xl">Proof that training is working</h1>
       <p className="mt-3 max-w-2xl text-zinc-400">Track workouts, volume, strength, consistency, body weight, and measurements in one simple place.</p>
 
       <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">

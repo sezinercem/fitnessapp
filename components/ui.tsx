@@ -6,7 +6,7 @@ export function Button({ className, ...props }: React.ButtonHTMLAttributes<HTMLB
   return (
     <button
       className={clsx(
-        "inline-flex items-center justify-center gap-2 rounded-md bg-blood px-4 py-2.5 text-sm font-bold text-white transition hover:bg-ember disabled:cursor-not-allowed disabled:opacity-60",
+        "inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-blood px-4 py-2.5 text-center text-sm font-bold text-white transition hover:bg-ember disabled:cursor-not-allowed disabled:opacity-60",
         className
       )}
       {...props}
@@ -18,7 +18,7 @@ export function LinkButton({ href, children, className }: { href: string; childr
   return (
     <Link
       href={href}
-      className={clsx("inline-flex items-center justify-center gap-2 rounded-md bg-blood px-4 py-2.5 text-sm font-bold text-white transition hover:bg-ember", className)}
+      className={clsx("inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-blood px-4 py-2.5 text-center text-sm font-bold text-white transition hover:bg-ember", className)}
     >
       {children}
       <ArrowRight className="h-4 w-4" />
@@ -28,14 +28,14 @@ export function LinkButton({ href, children, className }: { href: string; childr
 
 export function GhostLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
-    <Link href={href} className="inline-flex items-center gap-2 rounded-md border border-line px-4 py-2.5 text-sm font-bold text-zinc-100 transition hover:border-blood hover:text-white">
+    <Link href={href} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-line px-4 py-2.5 text-center text-sm font-bold text-zinc-100 transition hover:border-blood hover:text-white">
       {children}
     </Link>
   );
 }
 
 export function Card({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <section className={clsx("rounded-lg border border-line bg-panel p-5 shadow-glow", className)}>{children}</section>;
+  return <section className={clsx("rounded-lg border border-line bg-panel p-4 shadow-glow sm:p-5", className)}>{children}</section>;
 }
 
 export function StatCard({ label, value, icon }: { label: string; value: string; icon: "flame" | "target" | "salad" | "trophy" | "dumbbell" }) {

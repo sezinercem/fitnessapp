@@ -25,7 +25,7 @@ export default async function DashboardPage() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-sm font-bold uppercase tracking-[0.2em] text-ember">Command centre</p>
-          <h1 className="mt-2 text-4xl font-black">Your next best step</h1>
+          <h1 className="mt-2 text-3xl font-black sm:text-4xl">Your next best step</h1>
           <p className="mt-2 max-w-2xl text-zinc-400">Start with today. The rest of the week is laid out below so you always know what to train, track, or recover from.</p>
         </div>
         <LinkButton href="/progress">View progress</LinkButton>
@@ -36,7 +36,7 @@ export default async function DashboardPage() {
           <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-center">
             <div>
               <p className="text-sm font-bold uppercase tracking-[0.2em] text-ember">Today’s Training</p>
-              <h2 className="mt-2 text-3xl font-black">{today.is_rest_day ? "Rest Day" : today.training_focus}</h2>
+              <h2 className="mt-2 text-2xl font-black sm:text-3xl">{today.is_rest_day ? "Rest Day" : today.training_focus}</h2>
               <p className="mt-3 max-w-2xl text-zinc-400">
                 {today.is_rest_day ? "Recovery, walking and mobility recommended." : today.why_it_exists}
               </p>
@@ -87,7 +87,7 @@ export default async function DashboardPage() {
             </div>
             <Link href="/plan" className="text-sm font-bold text-ember hover:text-white">Edit weekly plan</Link>
           </div>
-          <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-7">
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-7">
             {days.map((day) => {
               const isComplete = completedDayIds.has(day.id);
               return (

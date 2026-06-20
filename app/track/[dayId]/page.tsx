@@ -43,7 +43,7 @@ export default async function TrackWorkoutPage({
   return (
     <AppShell>
       <p className="text-sm font-bold uppercase tracking-[0.2em] text-ember">Workout tracking</p>
-      <h1 className="mt-2 text-4xl font-black">{trainingDay.day_of_week}: {trainingDay.training_focus}</h1>
+      <h1 className="mt-2 text-3xl font-black sm:text-4xl">{trainingDay.day_of_week}: {trainingDay.training_focus}</h1>
       <p className="mt-3 max-w-2xl text-zinc-400">{trainingDay.why_it_exists}</p>
 
       {done ? (

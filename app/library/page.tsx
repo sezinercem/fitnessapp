@@ -10,7 +10,7 @@ export default function LibraryPage() {
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-sm font-bold uppercase tracking-[0.2em] text-ember">Workout library</p>
-          <h1 className="mt-2 text-4xl font-black">Exercise visual explainers</h1>
+          <h1 className="mt-2 text-3xl font-black sm:text-4xl">Exercise visual explainers</h1>
         </div>
         <div className="relative max-w-sm">
           <Search className="pointer-events-none absolute left-3 top-3.5 h-4 w-4 text-zinc-500" />

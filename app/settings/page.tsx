@@ -10,7 +10,7 @@ export default async function SettingsPage() {
   return (
     <AppShell>
       <p className="text-sm font-bold uppercase tracking-[0.2em] text-ember">Settings</p>
-      <h1 className="mt-2 text-4xl font-black">Profile</h1>
+      <h1 className="mt-2 text-3xl font-black sm:text-4xl">Profile</h1>
       <div className="mt-6 grid gap-4 lg:grid-cols-[0.8fr_1.2fr]">
         <Card>
           <h2 className="text-2xl font-black">Logged-in user</h2>

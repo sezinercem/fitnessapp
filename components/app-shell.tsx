@@ -45,16 +45,32 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
           </button>
         </form>
       </aside>
-      <main className="pb-24 lg:ml-64 lg:pb-0">
-        <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">{children}</div>
+      <header className="sticky top-0 z-20 flex items-center justify-between border-b border-line bg-black/95 px-4 py-3 backdrop-blur lg:hidden">
+        <Link href="/dashboard" className="flex items-center gap-3">
+          <span className="grid h-10 w-10 place-items-center rounded-md bg-blood text-white">
+            <Dumbbell className="h-5 w-5" />
+          </span>
+          <span className="text-lg font-black">Apex</span>
+        </Link>
+        <form action={signOutAction}>
+          <button className="inline-flex min-h-10 items-center gap-2 rounded-md border border-line px-3 text-xs font-bold text-zinc-300">
+            <LogOut className="h-4 w-4" />
+            Log out
+          </button>
+        </form>
+      </header>
+      <main className="pb-28 lg:ml-64 lg:pb-0">
+        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-5 lg:px-8">{children}</div>
       </main>
-      <nav className="fixed bottom-0 left-0 right-0 z-20 grid grid-cols-7 border-t border-line bg-black/95 lg:hidden">
-        {nav.map((item) => (
-          <Link key={item.href} href={item.href} className="flex flex-col items-center gap-1 px-1 py-3 text-[10px] font-bold text-zinc-300">
-            <item.icon className="h-5 w-5 text-ember" />
-            {item.label.split(" ")[0]}
-          </Link>
-        ))}
+      <nav className="fixed bottom-0 left-0 right-0 z-20 overflow-x-auto border-t border-line bg-black/95 px-2 py-2 lg:hidden">
+        <div className="grid min-w-[560px] grid-cols-7 gap-1">
+          {nav.map((item) => (
+            <Link key={item.href} href={item.href} className="flex min-h-16 flex-col items-center justify-center gap-1 rounded-md px-2 text-[11px] font-bold text-zinc-300">
+              <item.icon className="h-5 w-5 text-ember" />
+              {item.label.split(" ")[0]}
+            </Link>
+          ))}
+        </div>
       </nav>
     </div>
   );

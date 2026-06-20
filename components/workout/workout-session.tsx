@@ -68,7 +68,7 @@ export function WorkoutSessionTracker({ session, exercises, sets, previousSetsBy
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-sm font-bold uppercase tracking-[0.2em] text-ember">Workout mode</p>
-            <h1 className="mt-2 text-3xl font-black">{session.workout_name}</h1>
+            <h1 className="mt-2 text-2xl font-black sm:text-3xl">{session.workout_name}</h1>
             <p className="mt-1 text-sm text-zinc-400">{session.day_of_week} · {completed}/{exercises.length} exercises complete · {duration} minutes</p>
           </div>
           <span className="rounded-md border border-line bg-black px-3 py-2 text-sm font-bold">Status: {session.status}</span>
@@ -76,16 +76,16 @@ export function WorkoutSessionTracker({ session, exercises, sets, previousSetsBy
       </Card>
 
       <Card>
-        <div className="flex items-center justify-between gap-3">
-          <button type="button" className="rounded-md border border-line p-3 hover:border-blood" onClick={() => setIndex((value) => Math.max(0, value - 1))} disabled={index === 0} aria-label="Previous exercise">
+        <div className="grid grid-cols-[44px_1fr_44px] items-center gap-2 sm:gap-3">
+          <button type="button" className="grid h-11 w-11 place-items-center rounded-md border border-line hover:border-blood" onClick={() => setIndex((value) => Math.max(0, value - 1))} disabled={index === 0} aria-label="Previous exercise">
             <ChevronLeft className="h-5 w-5" />
           </button>
-          <div className="text-center">
+          <div className="min-w-0 text-center">
             <p className="text-sm font-bold text-zinc-500">Current exercise {index + 1} of {exercises.length}</p>
-            <h2 className="mt-1 text-3xl font-black">{current.exercise_name}</h2>
+            <h2 className="mt-1 break-words text-2xl font-black sm:text-3xl">{current.exercise_name}</h2>
             <p className="mt-1 text-sm text-zinc-400">Planned: {current.planned_sets} sets · {current.planned_reps || "target reps"}</p>
           </div>
-          <button type="button" className="rounded-md border border-line p-3 hover:border-blood" onClick={() => setIndex((value) => Math.min(exercises.length - 1, value + 1))} disabled={index === exercises.length - 1} aria-label="Next exercise">
+          <button type="button" className="grid h-11 w-11 place-items-center rounded-md border border-line hover:border-blood" onClick={() => setIndex((value) => Math.min(exercises.length - 1, value + 1))} disabled={index === exercises.length - 1} aria-label="Next exercise">
             <ChevronRight className="h-5 w-5" />
           </button>
         </div>

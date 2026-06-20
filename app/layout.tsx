@@ -11,7 +11,10 @@ const montserrat = Montserrat({
 
 export const metadata: Metadata = {
   title: "Apex",
-  description: "Personalised training, nutrition and progress tracking"
+  description: "Personalised training, nutrition and progress tracking",
+  icons: {
+    icon: "/icon.svg"
+  }
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -13,7 +13,7 @@ export default async function NutritionPage() {
   return (
     <AppShell>
       <p className="text-sm font-bold uppercase tracking-[0.2em] text-ember">Nutrition</p>
-      <h1 className="mt-2 text-4xl font-black">Simple daily targets</h1>
+      <h1 className="mt-2 text-3xl font-black sm:text-4xl">Simple daily targets</h1>
       <p className="mt-3 max-w-2xl text-zinc-400">Use this page as a plain-English nutrition plan: what to aim for, why it fits your goal, and what meals make those numbers easier.</p>
 
       {target ? (

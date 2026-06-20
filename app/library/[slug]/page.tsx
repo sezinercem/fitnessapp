@@ -16,7 +16,7 @@ export default async function ExerciseDetailPage({ params }: { params: Promise<{
       <Link href="/library" className="inline-flex items-center gap-2 text-sm font-bold text-zinc-400 hover:text-white"><ArrowLeft className="h-4 w-4" />Back to library</Link>
       <div className="mt-4">
         <p className="text-sm font-bold uppercase tracking-[0.2em] text-ember">{exercise.equipment}</p>
-        <h1 className="mt-2 text-5xl font-black">{exercise.name}</h1>
+        <h1 className="mt-2 text-4xl font-black sm:text-5xl">{exercise.name}</h1>
         <div className="mt-4 flex flex-wrap gap-2">
           {exercise.muscle_groups.map((group) => <span key={group} className="rounded-md border border-blood/40 bg-blood/10 px-3 py-1 text-sm font-bold text-red-100">{group}</span>)}
           <span className="rounded-md border border-line px-3 py-1 text-sm font-bold text-zinc-300">{exercise.difficulty}</span>

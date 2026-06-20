@@ -52,7 +52,7 @@ function Brand() {
 
 function PrimaryLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
-    <Link href={href} className="inline-flex items-center justify-center gap-2 rounded-md bg-blood px-5 py-3 text-sm font-black text-white transition hover:bg-ember">
+    <Link href={href} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-blood px-5 py-3 text-center text-sm font-black text-white transition hover:bg-ember">
       {children}
       <ArrowRight className="h-4 w-4" />
     </Link>
@@ -61,7 +61,7 @@ function PrimaryLink({ href, children }: { href: string; children: React.ReactNo
 
 function SecondaryLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
-    <Link href={href} className="inline-flex items-center justify-center rounded-md border border-line px-5 py-3 text-sm font-black text-zinc-100 transition hover:border-blood hover:text-white">
+    <Link href={href} className="inline-flex min-h-11 items-center justify-center rounded-md border border-line px-5 py-3 text-center text-sm font-black text-zinc-100 transition hover:border-blood hover:text-white">
       {children}
     </Link>
   );
@@ -81,20 +81,20 @@ export default function LandingPage() {
             ))}
           </nav>
           <div className="flex items-center gap-2">
-            <Link href="/login" className="hidden rounded-md border border-line px-4 py-2 text-sm font-bold text-zinc-100 transition hover:border-blood sm:inline-flex">Log in</Link>
-            <Link href="/signup" className="rounded-md bg-blood px-4 py-2 text-sm font-black text-white transition hover:bg-ember">Sign up</Link>
+            <Link href="/login" className="inline-flex min-h-10 items-center rounded-md border border-line px-3 text-sm font-bold text-zinc-100 transition hover:border-blood sm:px-4">Log in</Link>
+            <Link href="/signup" className="inline-flex min-h-10 items-center rounded-md bg-blood px-3 text-sm font-black text-white transition hover:bg-ember sm:px-4">Sign up</Link>
           </div>
         </div>
       </header>
 
       <section className="relative overflow-hidden border-b border-line">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(225,29,47,0.24),transparent_42%)]" />
-        <div className="relative mx-auto grid min-h-[78vh] max-w-7xl items-center gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:px-8">
+        <div className="relative mx-auto grid min-h-[78vh] max-w-7xl items-center gap-10 px-4 py-12 sm:px-6 sm:py-14 lg:grid-cols-[1.05fr_0.95fr] lg:px-8">
           <div>
             <p className="inline-flex rounded-md border border-blood/40 bg-blood/10 px-3 py-2 text-xs font-black uppercase tracking-[0.18em] text-red-100">
               Personalised fitness command centre
             </p>
-            <h1 className="mt-6 max-w-4xl text-5xl font-black leading-[0.95] tracking-normal sm:text-7xl">
+            <h1 className="mt-6 max-w-4xl text-4xl font-black leading-[1.02] tracking-normal sm:text-6xl lg:text-7xl">
               Train smarter. Eat better. Track everything.
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-8 text-zinc-300">
@@ -148,7 +148,7 @@ export default function LandingPage() {
       <section className="border-b border-line px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl text-center">
           <p className="text-sm font-black uppercase tracking-[0.2em] text-ember">The problem</p>
-          <h2 className="mt-3 text-4xl font-black">Most fitness apps make progress feel harder than it should.</h2>
+          <h2 className="mt-3 text-3xl font-black sm:text-4xl">Most fitness apps make progress feel harder than it should.</h2>
           <p className="mx-auto mt-4 max-w-3xl text-lg leading-8 text-zinc-400">
             They are confusing, generic and difficult to stick with. Apex keeps the journey obvious: know what to train today, what to eat, what to track, and how your week is improving.
           </p>
@@ -159,7 +159,7 @@ export default function LandingPage() {
         <div className="mx-auto max-w-7xl">
           <div className="max-w-2xl">
             <p className="text-sm font-black uppercase tracking-[0.2em] text-ember">Features</p>
-            <h2 className="mt-3 text-4xl font-black">Everything you need, explained clearly.</h2>
+            <h2 className="mt-3 text-3xl font-black sm:text-4xl">Everything you need, explained clearly.</h2>
           </div>
           <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {features.map(([title, body, Icon]) => (
@@ -179,7 +179,7 @@ export default function LandingPage() {
         <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
           <div>
             <p className="text-sm font-black uppercase tracking-[0.2em] text-ember">Training</p>
-            <h2 className="mt-3 text-4xl font-black">A Monday to Sunday plan that tells you exactly what to do.</h2>
+            <h2 className="mt-3 text-3xl font-black sm:text-4xl">A Monday to Sunday plan that tells you exactly what to do.</h2>
             <p className="mt-4 leading-7 text-zinc-400">
               Apex separates workout days and rest days, recommends training based on your goal, and lets you track sets, reps, weight, notes and difficulty from each session.
             </p>
@@ -213,7 +213,7 @@ export default function LandingPage() {
           </div>
           <div>
             <p className="text-sm font-black uppercase tracking-[0.2em] text-ember">Nutrition</p>
-            <h2 className="mt-3 text-4xl font-black">Know what to eat and why it fits your plan.</h2>
+            <h2 className="mt-3 text-3xl font-black sm:text-4xl">Know what to eat and why it fits your plan.</h2>
             <p className="mt-4 leading-7 text-zinc-400">
               Apex creates an editable meal plan with calories and macros, plus a plain-English reason behind the plan so beginners understand the target instead of guessing.
             </p>
@@ -224,7 +224,7 @@ export default function LandingPage() {
       <section id="progress" className="border-b border-line px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <p className="text-sm font-black uppercase tracking-[0.2em] text-ember">Progress</p>
-          <h2 className="mt-3 max-w-3xl text-4xl font-black">Track the markers that actually show improvement.</h2>
+          <h2 className="mt-3 max-w-3xl text-3xl font-black sm:text-4xl">Track the markers that actually show improvement.</h2>
           <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
             {[
               ["Completed workouts", Activity],
@@ -245,7 +245,7 @@ export default function LandingPage() {
       <section className="border-b border-line px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <p className="text-sm font-black uppercase tracking-[0.2em] text-ember">How it works</p>
-          <h2 className="mt-3 text-4xl font-black">From sign up to smarter training in five steps.</h2>
+          <h2 className="mt-3 text-3xl font-black sm:text-4xl">From sign up to smarter training in five steps.</h2>
           <div className="mt-8 grid gap-4 md:grid-cols-5">
             {howItWorks.map((step, index) => (
               <div key={step} className="rounded-lg border border-line bg-panel p-5">
@@ -259,7 +259,7 @@ export default function LandingPage() {
 
       <section className="px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl rounded-lg border border-blood/40 bg-panel p-8 text-center shadow-glow">
-          <h2 className="text-4xl font-black">Build your plan in minutes.</h2>
+          <h2 className="text-3xl font-black sm:text-4xl">Build your plan in minutes.</h2>
           <p className="mx-auto mt-4 max-w-2xl text-zinc-400">Create your Apex account, answer the onboarding questions, and get a clear training and nutrition plan you can edit as you improve.</p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <PrimaryLink href="/signup">Sign up</PrimaryLink>

@@ -22,7 +22,7 @@ export default async function PlanPage() {
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-sm font-bold uppercase tracking-[0.2em] text-ember">Current plan</p>
-          <h1 className="mt-2 text-4xl font-black">Training plan</h1>
+          <h1 className="mt-2 text-3xl font-black sm:text-4xl">Training plan</h1>
           <p className="mt-2 max-w-2xl text-zinc-400">Understand what each day is for, then edit the plan as your strength, time, or equipment changes.</p>
         </div>
       </div>
