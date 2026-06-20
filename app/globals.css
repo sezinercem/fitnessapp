@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #050505;
+  color: #f5f5f5;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  background: #101010;
+  color: #fff;
+  padding: 0.75rem 0.85rem;
+  outline: none;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #e11d2f;
+  box-shadow: 0 0 0 3px rgba(225, 29, 47, 0.18);
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ring-progress {
+  background: conic-gradient(#e11d2f var(--progress), #252525 0);
+}
