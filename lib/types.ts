@@ -82,3 +82,98 @@ export type Exercise = {
   safety_tips: string[];
   related: string[];
 };
+
+export type OnboardingAnswers = {
+  id: string;
+  user_id: string;
+  main_goal: string;
+  experience_level: string;
+  training_days_per_week: number;
+  equipment_available: string;
+  session_length: number;
+  nutrition_goal: string;
+  dietary_preference: string;
+  current_weight: number | null;
+  target_weight: number | null;
+  height: number | null;
+  age: number | null;
+};
+
+export type PlannedExercise = {
+  id: string;
+  training_day_id: string;
+  exercise_name: string;
+  muscle_groups: string[];
+  sets: number;
+  reps: string;
+  target_weight: string | null;
+  rest_seconds: number;
+  notes: string | null;
+  sort_order: number;
+};
+
+export type TrainingDay = {
+  id: string;
+  weekly_plan_id: string;
+  day_of_week: string;
+  day_index: number;
+  training_focus: string;
+  is_rest_day: boolean;
+  estimated_duration: number;
+  why_it_exists: string;
+  main_muscles: string[];
+  recovery_notes: string | null;
+  planned_exercises: PlannedExercise[];
+};
+
+export type WeeklyTrainingPlan = {
+  id: string;
+  user_id: string;
+  plan_name: string;
+  goal: string;
+  difficulty_level: string;
+  expected_outcome: string;
+  weekly_structure: string;
+  training_days: TrainingDay[];
+};
+
+export type NutritionTarget = {
+  id: string;
+  user_id: string;
+  goal: string;
+  daily_calories: number;
+  protein_target: number;
+  carbs_target: number;
+  fat_target: number;
+  water_target_liters: number;
+  explanation: string | null;
+};
+
+export type Meal = {
+  id: string;
+  user_id: string;
+  nutrition_target_id: string;
+  meal_name: string;
+  time_of_day: string;
+  foods: string | null;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  purpose: string | null;
+  notes: string | null;
+  sort_order: number;
+};
+
+export type WorkoutSet = {
+  id: string;
+  workout_log_id: string;
+  exercise_name: string;
+  set_number: number;
+  weight: string | null;
+  reps: number | null;
+  rest_seconds: number | null;
+  rpe: number | null;
+  notes: string | null;
+  is_complete: boolean;
+};

@@ -70,3 +70,74 @@ export const mealSchema = z.object({
   ingredients: text(500).optional(),
   notes: text(300).optional()
 });
+
+export const onboardingSchema = z.object({
+  mainGoal: z.enum(["Build muscle", "Lose fat", "Get stronger", "Improve fitness", "Hybrid athlete", "General health"]),
+  experienceLevel: z.enum(["Beginner", "Intermediate", "Advanced"]),
+  trainingDaysPerWeek: z.coerce.number().int().min(2).max(7),
+  equipmentAvailable: z.enum(["Bodyweight only", "Dumbbells", "Barbell", "Full gym", "Home gym", "Resistance bands"]),
+  sessionLength: z.coerce.number().int().min(20).max(90),
+  nutritionGoal: z.enum(["Fat loss", "Maintenance", "Muscle gain", "Performance"]),
+  dietaryPreference: z.enum(["No preference", "High protein", "Vegetarian", "Vegan", "Halal", "Gluten free"]),
+  currentWeight: z.coerce.number().min(25).max(350),
+  targetWeight: z.coerce.number().min(25).max(350),
+  height: z.coerce.number().min(100).max(250),
+  age: z.coerce.number().int().min(13).max(100)
+});
+
+export const trackingSetSchema = z.object({
+  workoutLogId: z.string().uuid(),
+  exerciseName: requiredText(100),
+  setNumber: z.coerce.number().int().min(1).max(20),
+  weight: text(30).optional(),
+  reps: z.coerce.number().int().min(0).max(200),
+  restSeconds: z.coerce.number().int().min(0).max(900),
+  rpe: z.coerce.number().min(1).max(10),
+  notes: text(400).optional(),
+  isComplete: z.coerce.boolean().optional()
+});
+
+export const bodyWeightSchema = z.object({
+  weight: z.coerce.number().min(25).max(350),
+  notes: text(300).optional()
+});
+
+export const measurementSchema = z.object({
+  chest: z.coerce.number().min(0).max(300).optional(),
+  waist: z.coerce.number().min(0).max(300).optional(),
+  hips: z.coerce.number().min(0).max(300).optional(),
+  arm: z.coerce.number().min(0).max(150).optional(),
+  thigh: z.coerce.number().min(0).max(200).optional(),
+  notes: text(300).optional()
+});
+
+export const easyMealSchema = z.object({
+  nutritionTargetId: z.string().uuid(),
+  mealName: requiredText(100),
+  timeOfDay: requiredText(40),
+  foods: text(700),
+  calories: z.coerce.number().int().min(0).max(4000),
+  protein: z.coerce.number().int().min(0).max(300),
+  carbs: z.coerce.number().int().min(0).max(500),
+  fat: z.coerce.number().int().min(0).max(250),
+  purpose: text(300).optional(),
+  notes: text(300).optional()
+});
+
+export const trainingDaySchema = z.object({
+  trainingFocus: requiredText(100),
+  estimatedDuration: z.coerce.number().int().min(10).max(180),
+  whyItExists: text(600),
+  recoveryNotes: text(400).optional()
+});
+
+export const plannedExerciseSchema = z.object({
+  trainingDayId: z.string().uuid(),
+  exerciseName: requiredText(100),
+  muscleGroups: text(200),
+  sets: z.coerce.number().int().min(1).max(12),
+  reps: text(40),
+  targetWeight: text(50).optional(),
+  restSeconds: z.coerce.number().int().min(0).max(900),
+  notes: text(400).optional()
+});

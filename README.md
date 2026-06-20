@@ -22,7 +22,12 @@ The frontend uses only public Supabase browser-safe keys. Never add a Supabase s
 
 ## Supabase database
 
-Run the SQL migration in `supabase/migrations/001_initial_schema.sql` in your Supabase SQL editor or through the Supabase CLI. It creates:
+Run the SQL migrations in order from `supabase/migrations` in your Supabase SQL editor or through the Supabase CLI:
+
+1. `001_initial_schema.sql`
+2. `002_guided_onboarding_tracking.sql`
+
+They create:
 
 - `profiles`
 - `workout_plans`
@@ -32,6 +37,15 @@ Run the SQL migration in `supabase/migrations/001_initial_schema.sql` in your Su
 - `nutrition_plans`
 - `nutrition_meals`
 - `workout_logs`
+- `onboarding_answers`
+- `weekly_training_plans`
+- `training_days`
+- `planned_exercises`
+- `workout_sets`
+- `body_weight_logs`
+- `body_measurements`
+- `nutrition_targets`
+- `meals`
 
 RLS is enabled on every table. User-owned tables use `auth.uid()` policies so users can only read, create, edit, and delete their own rows. Child tables also validate that their parent record belongs to the authenticated user.
 
@@ -39,11 +53,14 @@ RLS is enabled on every table. User-owned tables use `auth.uid()` policies so us
 
 - Landing page, login, sign up, password reset request
 - Middleware-protected private routes
-- Dashboard with plan, today workout, progress, nutrition, quick actions, recommendations, and recent activity
+- Guided onboarding after sign up with generated weekly training and starter nutrition plans
+- Dashboard command centre with today’s plan and Monday-Sunday cards
+- Workout tracking with sets, weight, reps, rest time, RPE, notes, and completion status
+- Progress page with history, weekly consistency, volume, PRs, body weight, and measurements
 - First-login plan templates and scratch plan creation
 - Workout plan editing, day rename, exercise add/edit/replace/delete, completion logging
 - Recommendation picker based on goal, experience, and equipment
-- Editable nutrition plan with meal add/edit/delete/reorder
+- Editable nutrition targets and meals with plain-English purpose text
 - Exercise library with polished coded visual explainers
 - Profile/settings page
 - Zod validation, input sanitisation, best-effort auth action rate limiting

@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { CalendarCheck, Dumbbell, Home, Library, LogOut, Salad, Settings, Sparkles } from "lucide-react";
+import { CalendarCheck, Dumbbell, Home, Library, LineChart, LogOut, Salad, Settings, Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { signOutAction } from "@/lib/actions";
 
 const nav = [
   { href: "/dashboard", label: "Dashboard", icon: Home },
   { href: "/plan", label: "Plan", icon: CalendarCheck },
+  { href: "/progress", label: "Progress", icon: LineChart },
   { href: "/recommendations", label: "Recommended", icon: Sparkles },
   { href: "/nutrition", label: "Nutrition", icon: Salad },
   { href: "/library", label: "Library", icon: Library },
@@ -47,7 +48,7 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
       <main className="pb-24 lg:ml-64 lg:pb-0">
         <div className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">{children}</div>
       </main>
-      <nav className="fixed bottom-0 left-0 right-0 z-20 grid grid-cols-6 border-t border-line bg-black/95 lg:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-20 grid grid-cols-7 border-t border-line bg-black/95 lg:hidden">
         {nav.map((item) => (
           <Link key={item.href} href={item.href} className="flex flex-col items-center gap-1 px-1 py-3 text-[10px] font-bold text-zinc-300">
             <item.icon className="h-5 w-5 text-ember" />

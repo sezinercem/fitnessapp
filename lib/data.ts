@@ -38,3 +38,46 @@ export async function getAuthedData() {
     logs: logs.data ?? []
   };
 }
+
+export async function getGuidedData() {
+  const supabase = await createClient();
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const [onboarding, weeklyPlan, nutritionTarget, meals, logs, sets, weights, measurements] = await Promise.all([
+    supabase.from("onboarding_answers").select("*").eq("user_id", user.id).maybeSingle(),
+    supabase
+      .from("weekly_training_plans")
+      .select("*, training_days(*, planned_exercises(*))")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from("nutrition_targets")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase.from("meals").select("*").eq("user_id", user.id).order("sort_order"),
+    supabase.from("workout_logs").select("*").eq("user_id", user.id).order("completed_at", { ascending: false }).limit(25),
+    supabase.from("workout_sets").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(200),
+    supabase.from("body_weight_logs").select("*").eq("user_id", user.id).order("logged_at", { ascending: false }).limit(20),
+    supabase.from("body_measurements").select("*").eq("user_id", user.id).order("logged_at", { ascending: false }).limit(20)
+  ]);
+
+  return {
+    user,
+    onboarding: onboarding.data,
+    weeklyPlan: weeklyPlan.data,
+    nutritionTarget: nutritionTarget.data,
+    easyMeals: meals.data ?? [],
+    logs: logs.data ?? [],
+    sets: sets.data ?? [],
+    weights: weights.data ?? [],
+    measurements: measurements.data ?? []
+  };
+}

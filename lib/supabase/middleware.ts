@@ -35,7 +35,7 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const pathname = request.nextUrl.pathname;
-  const privateRoutes = ["/dashboard", "/plan", "/recommendations", "/nutrition", "/library", "/settings"];
+  const privateRoutes = ["/dashboard", "/onboarding", "/plan", "/progress", "/track", "/recommendations", "/nutrition", "/library", "/settings"];
   const authRoutes = ["/login", "/signup"];
   const isPrivate = privateRoutes.some((route) => pathname.startsWith(route));
 
