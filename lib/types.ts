@@ -89,6 +89,7 @@ export type OnboardingAnswers = {
   main_goal: string;
   experience_level: string;
   training_days_per_week: number;
+  selected_training_days?: string[] | null;
   equipment_available: string;
   session_length: number;
   nutrition_goal: string;

@@ -14,6 +14,16 @@ const focusByGoal: Record<string, string[]> = {
   "General health": ["Full Body Basics", "Walk and Core", "Upper Body Basics", "Lower Body Basics", "Mobility and Balance", "Light Conditioning", "Rest"]
 };
 
+const splitByTrainingDays: Record<number, string[]> = {
+  1: ["Full Body"],
+  2: ["Full Body A", "Full Body B"],
+  3: ["Full Body", "Upper-Lower Strength", "Hybrid Conditioning"],
+  4: ["Upper Body", "Lower Body", "Upper Strength", "Lower Strength"],
+  5: ["Push", "Pull", "Legs", "Upper Accessories", "Conditioning"],
+  6: ["Push A", "Pull A", "Legs A", "Push B", "Pull B", "Legs B"],
+  7: ["Chest and Triceps", "Back and Biceps", "Leg Strength", "Shoulders and Core", "Posterior Chain", "Conditioning", "Mobility Strength"]
+};
+
 const exerciseBank: Record<string, string[]> = {
   "Bodyweight only": ["Push-up", "Bodyweight squat", "Reverse lunge", "Glute bridge", "Plank", "Mountain climber", "Dead bug"],
   Dumbbells: ["Dumbbell bench press", "Goblet squat", "One-arm dumbbell row", "Dumbbell Romanian deadlift", "Dumbbell shoulder press", "Dumbbell lunge", "Farmer carry"],
@@ -24,18 +34,19 @@ const exerciseBank: Record<string, string[]> = {
 };
 
 export function buildGeneratedPlan(answers: Answers) {
-  const focuses = focusByGoal[answers.mainGoal] ?? focusByGoal["General health"];
+  const selectedDays = answers.selectedTrainingDays;
+  const split = splitByTrainingDays[selectedDays.length] ?? focusByGoal[answers.mainGoal] ?? splitByTrainingDays[3];
   const exercises = exerciseBank[answers.equipmentAvailable] ?? exerciseBank["Bodyweight only"];
-  const trainingDays = new Set<number>();
-  for (let index = 0; index < answers.trainingDaysPerWeek; index += 1) {
-    trainingDays.add(Math.round(index * (7 / answers.trainingDaysPerWeek)) % 7);
-  }
+  const trainingDays = new Set(selectedDays.map((day) => week.indexOf(day)));
+  let workoutIndex = 0;
 
   return week.map((day, index) => {
     const isWorkout = trainingDays.has(index);
-    const focus = isWorkout ? focuses[index % focuses.length] : "Rest and recovery";
+    const focus = isWorkout ? split[workoutIndex % split.length] : "Rest Day";
     const baseSets = answers.experienceLevel === "Advanced" ? 4 : answers.experienceLevel === "Intermediate" ? 3 : 2;
     const count = isWorkout ? Math.min(6, Math.max(3, Math.round(answers.sessionLength / 12))) : 0;
+    const currentWorkoutIndex = workoutIndex;
+    if (isWorkout) workoutIndex += 1;
 
     return {
       day,
@@ -44,14 +55,14 @@ export function buildGeneratedPlan(answers: Answers) {
       isRestDay: !isWorkout,
       estimatedDuration: isWorkout ? answers.sessionLength : 20,
       whyItExists: isWorkout
-        ? `${focus} moves you toward ${answers.mainGoal.toLowerCase()} by training the main movement patterns without overloading recovery.`
+        ? `${focus} moves you toward ${answers.mainGoal.toLowerCase()} with a split matched to your selected training days.`
         : "Rest days help you adapt, reduce soreness, and come back stronger for the next session.",
-      mainMuscles: isWorkout ? ["Chest", "Back", "Legs", "Core"].slice(0, index % 4 + 1) : ["Recovery"],
-      recoveryNotes: isWorkout ? "Keep two reps in reserve on most sets and stop if form breaks." : "Walk, stretch, hydrate, and sleep well.",
+      mainMuscles: isWorkout ? musclesForFocus(focus) : ["Recovery", "Mobility"],
+      recoveryNotes: isWorkout ? "Keep two reps in reserve on most sets and stop if form breaks." : "Mobility recommendation: 10 minutes of hips, upper back and hamstrings. Walking target: 7,000-10,000 steps. Recovery tips: hydrate, sleep well, and keep stress low.",
       exercises: isWorkout
         ? Array.from({ length: count }, (_, exerciseIndex) => ({
-            name: exercises[(index + exerciseIndex) % exercises.length],
-            muscleGroups: ["Full body", "Core"],
+            name: exercises[(currentWorkoutIndex + exerciseIndex) % exercises.length],
+            muscleGroups: musclesForFocus(focus),
             sets: baseSets,
             reps: answers.mainGoal === "Get stronger" ? "5" : "8-12",
             targetWeight: answers.equipmentAvailable === "Bodyweight only" ? "bodyweight" : "Choose a controlled weight",
@@ -61,6 +72,14 @@ export function buildGeneratedPlan(answers: Answers) {
         : []
     };
   });
+}
+
+function musclesForFocus(focus: string) {
+  if (focus.includes("Upper") || focus.includes("Push") || focus.includes("Chest")) return ["Chest", "Shoulders", "Triceps"];
+  if (focus.includes("Pull") || focus.includes("Back")) return ["Back", "Biceps", "Rear delts"];
+  if (focus.includes("Leg") || focus.includes("Lower") || focus.includes("Posterior")) return ["Quads", "Glutes", "Hamstrings"];
+  if (focus.includes("Core") || focus.includes("Mobility")) return ["Core", "Hips", "Mobility"];
+  return ["Full body", "Core"];
 }
 
 export function buildNutrition(answers: Answers) {

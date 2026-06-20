@@ -2,7 +2,7 @@ import { Plus, Save, Trash2 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { Button, Card, EmptyState } from "@/components/ui";
 import { ConfirmButton } from "@/components/confirm-button";
-import { addDayAction, addExerciseAction, addPlannedExerciseAction, completeWorkoutAction, createBlankPlanAction, createPlanFromTemplateAction, deleteExerciseAction, deletePlanAction, deletePlannedExerciseAction, updateDayAction, updateExerciseAction, updatePlanAction, updateTrainingDayAction } from "@/lib/actions";
+import { addDayAction, addExerciseAction, addPlannedExerciseAction, completeWorkoutAction, createBlankPlanAction, createPlanFromTemplateAction, deleteExerciseAction, deletePlanAction, deletePlannedExerciseAction, regenerateWeeklyPlanAction, updateDayAction, updateExerciseAction, updatePlanAction, updateTrainingDayAction } from "@/lib/actions";
 import { getAuthedData, getGuidedData } from "@/lib/data";
 import { planTemplates } from "@/lib/sample-data";
 import type { TrainingDay, WeeklyTrainingPlan, WorkoutDay } from "@/lib/types";
@@ -12,7 +12,8 @@ export default async function PlanPage() {
   const { weeklyPlan } = await getGuidedData();
   const days = ((plan?.workout_days ?? []) as WorkoutDay[]).sort((a, b) => a.sort_order - b.sort_order);
   const guidedPlan = weeklyPlan as WeeklyTrainingPlan | null;
-  const guidedDays = ((guidedPlan?.training_days ?? []) as TrainingDay[]).sort((a, b) => a.day_index - b.day_index);
+const guidedDays = ((guidedPlan?.training_days ?? []) as TrainingDay[]).sort((a, b) => a.day_index - b.day_index);
+  const weekDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
   return (
     <AppShell>
@@ -35,19 +36,29 @@ export default async function PlanPage() {
               <div className="rounded-lg border border-line bg-black p-4"><p className="text-xs uppercase tracking-[0.16em] text-zinc-500">Difficulty</p><p className="mt-2 font-black">{guidedPlan.difficulty_level}</p></div>
               <div className="rounded-lg border border-line bg-black p-4"><p className="text-xs uppercase tracking-[0.16em] text-zinc-500">Expected outcome</p><p className="mt-2 text-sm text-zinc-300">{guidedPlan.expected_outcome}</p></div>
             </div>
+            <form action={regenerateWeeklyPlanAction} className="mt-5">
+              <Button><Save className="h-4 w-4" />Regenerate from onboarding days</Button>
+            </form>
           </Card>
 
           {guidedDays.map((day) => (
             <Card key={day.id}>
               <div className="grid gap-5 lg:grid-cols-[0.85fr_1.15fr]">
                 <div>
-                  <p className="text-sm font-bold uppercase tracking-[0.18em] text-ember">{day.day_of_week}</p>
+                  <p className={`text-sm font-bold uppercase tracking-[0.18em] ${day.is_rest_day ? "text-zinc-500" : "text-ember"}`}>{day.day_of_week}</p>
                   <form action={updateTrainingDayAction.bind(null, day.id)} className="mt-3 grid gap-3">
+                    <select name="dayOfWeek" defaultValue={day.day_of_week}>
+                      {weekDays.map((weekDay) => <option key={weekDay}>{weekDay}</option>)}
+                    </select>
+                    <select name="isRestDay" defaultValue={String(day.is_rest_day)}>
+                      <option value="false">Training day</option>
+                      <option value="true">Rest/recovery day</option>
+                    </select>
                     <input name="trainingFocus" defaultValue={day.training_focus} placeholder="Training focus, e.g. Lower Body Strength" />
                     <input name="estimatedDuration" type="number" defaultValue={day.estimated_duration} placeholder="Estimated duration, e.g. 45" />
                     <textarea name="whyItExists" defaultValue={day.why_it_exists} placeholder="Explain why this day exists, e.g. Builds stronger legs and glutes." />
                     <textarea name="recoveryNotes" defaultValue={day.recovery_notes ?? ""} placeholder="Recovery notes, e.g. Keep two reps in reserve." />
-                    <Button><Save className="h-4 w-4" />Save day</Button>
+                    <Button><Save className="h-4 w-4" />Save day / move workout</Button>
                   </form>
                   <div className="mt-4 rounded-lg border border-line bg-black p-4">
                     <p className="font-black">Main muscles trained</p>

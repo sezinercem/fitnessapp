@@ -91,7 +91,7 @@ export async function completeOnboardingAction(formData: FormData) {
   const parsed = onboardingSchema.parse({
     mainGoal: formData.get("mainGoal"),
     experienceLevel: formData.get("experienceLevel"),
-    trainingDaysPerWeek: formData.get("trainingDaysPerWeek"),
+    selectedTrainingDays: formData.get("selectedTrainingDays"),
     equipmentAvailable: formData.get("equipmentAvailable"),
     sessionLength: formData.get("sessionLength"),
     nutritionGoal: formData.get("nutritionGoal"),
@@ -106,7 +106,8 @@ export async function completeOnboardingAction(formData: FormData) {
     user_id: user.id,
     main_goal: parsed.mainGoal,
     experience_level: parsed.experienceLevel,
-    training_days_per_week: parsed.trainingDaysPerWeek,
+    training_days_per_week: parsed.selectedTrainingDays.length,
+    selected_training_days: parsed.selectedTrainingDays,
     equipment_available: parsed.equipmentAvailable,
     session_length: parsed.sessionLength,
     nutrition_goal: parsed.nutritionGoal,
@@ -137,7 +138,7 @@ export async function completeOnboardingAction(formData: FormData) {
       goal: parsed.mainGoal,
       difficulty_level: parsed.experienceLevel,
       expected_outcome: `Build confidence, consistency, and measurable progress toward ${parsed.mainGoal.toLowerCase()}.`,
-      weekly_structure: `${parsed.trainingDaysPerWeek} training days, ${7 - parsed.trainingDaysPerWeek} recovery days, ${parsed.sessionLength}-minute sessions.`
+      weekly_structure: `${parsed.selectedTrainingDays.length} training days (${parsed.selectedTrainingDays.join(", ")}), ${7 - parsed.selectedTrainingDays.length} recovery days, ${parsed.sessionLength}-minute sessions.`
     })
     .select("id")
     .single();
@@ -216,6 +217,83 @@ export async function completeOnboardingAction(formData: FormData) {
 
   revalidatePath("/dashboard");
   redirect("/dashboard");
+}
+
+export async function regenerateWeeklyPlanAction() {
+  const { supabase, user } = await currentUser();
+  const { data: answers } = await supabase
+    .from("onboarding_answers")
+    .select("*")
+    .eq("user_id", user.id)
+    .single();
+  if (!answers) throw new Error("Onboarding answers not found.");
+
+  const parsed = onboardingSchema.parse({
+    mainGoal: answers.main_goal,
+    experienceLevel: answers.experience_level,
+    selectedTrainingDays: answers.selected_training_days ?? [],
+    equipmentAvailable: answers.equipment_available,
+    sessionLength: answers.session_length,
+    nutritionGoal: answers.nutrition_goal,
+    dietaryPreference: answers.dietary_preference,
+    currentWeight: answers.current_weight,
+    targetWeight: answers.target_weight,
+    height: answers.height,
+    age: answers.age
+  });
+
+  await supabase.from("weekly_training_plans").delete().eq("user_id", user.id);
+  const days = buildGeneratedPlan(parsed);
+  const { data: weeklyPlan, error: weeklyError } = await supabase
+    .from("weekly_training_plans")
+    .insert({
+      user_id: user.id,
+      plan_name: `${parsed.mainGoal} regenerated plan`,
+      goal: parsed.mainGoal,
+      difficulty_level: parsed.experienceLevel,
+      expected_outcome: `Build consistency and progress toward ${parsed.mainGoal.toLowerCase()} using your selected training days.`,
+      weekly_structure: `${parsed.selectedTrainingDays.length} training days (${parsed.selectedTrainingDays.join(", ")}), ${7 - parsed.selectedTrainingDays.length} recovery days, ${parsed.sessionLength}-minute sessions.`
+    })
+    .select("id")
+    .single();
+  if (weeklyError || !weeklyPlan) throw new Error(weeklyError?.message ?? "Could not regenerate plan.");
+
+  for (const day of days) {
+    const { data: trainingDay, error: dayError } = await supabase
+      .from("training_days")
+      .insert({
+        user_id: user.id,
+        weekly_plan_id: weeklyPlan.id,
+        day_of_week: day.day,
+        day_index: day.dayIndex,
+        training_focus: day.focus,
+        is_rest_day: day.isRestDay,
+        estimated_duration: day.estimatedDuration,
+        why_it_exists: day.whyItExists,
+        main_muscles: day.mainMuscles,
+        recovery_notes: day.recoveryNotes
+      })
+      .select("id")
+      .single();
+    if (dayError || !trainingDay) throw new Error(dayError?.message ?? "Could not create training day.");
+    if (day.exercises.length) {
+      await supabase.from("planned_exercises").insert(day.exercises.map((exercise, index) => ({
+        user_id: user.id,
+        training_day_id: trainingDay.id,
+        exercise_name: exercise.name,
+        muscle_groups: exercise.muscleGroups,
+        sets: exercise.sets,
+        reps: exercise.reps,
+        target_weight: exercise.targetWeight,
+        rest_seconds: exercise.restSeconds,
+        notes: exercise.notes,
+        sort_order: index
+      })));
+    }
+  }
+
+  revalidatePath("/plan");
+  revalidatePath("/dashboard");
 }
 
 export async function updateProfileAction(formData: FormData) {
@@ -514,12 +592,17 @@ export async function updateTrainingDayAction(dayId: string, formData: FormData)
   const { supabase, user } = await currentUser();
   const parsed = trainingDaySchema.parse({
     trainingFocus: formData.get("trainingFocus"),
+    dayOfWeek: formData.get("dayOfWeek"),
+    isRestDay: formData.get("isRestDay") === "true",
     estimatedDuration: formData.get("estimatedDuration"),
     whyItExists: formData.get("whyItExists"),
     recoveryNotes: formData.get("recoveryNotes")
   });
   await supabase.from("training_days").update({
+    day_of_week: parsed.dayOfWeek,
+    day_index: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].indexOf(parsed.dayOfWeek),
     training_focus: parsed.trainingFocus,
+    is_rest_day: parsed.isRestDay,
     estimated_duration: parsed.estimatedDuration,
     why_it_exists: parsed.whyItExists,
     recovery_notes: parsed.recoveryNotes

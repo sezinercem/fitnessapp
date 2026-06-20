@@ -35,15 +35,22 @@ export default async function DashboardPage() {
           <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-center">
             <div>
               <p className="text-sm font-bold uppercase tracking-[0.2em] text-ember">Today’s plan</p>
-              <h2 className="mt-2 text-3xl font-black">{today.day_of_week}: {today.training_focus}</h2>
+              <h2 className="mt-2 text-3xl font-black">{today.is_rest_day ? "Today is a recovery day" : `${today.day_of_week}: ${today.training_focus}`}</h2>
               <p className="mt-3 max-w-2xl text-zinc-400">
-                {today.is_rest_day ? "Today is a rest day. Your job is to recover, hydrate, move lightly, and be ready for the next session." : today.why_it_exists}
+                {today.is_rest_day ? "Your goal today is to recover well so your next training day feels stronger." : today.why_it_exists}
               </p>
               <div className="mt-5 flex flex-wrap gap-2">
                 <span className="rounded-md border border-line bg-black px-3 py-2 text-sm font-bold">{today.is_rest_day ? "Rest day" : "Workout day"}</span>
                 <span className="rounded-md border border-line bg-black px-3 py-2 text-sm font-bold">{today.estimated_duration} min</span>
                 <span className="rounded-md border border-line bg-black px-3 py-2 text-sm font-bold">{today.planned_exercises?.length ?? 0} exercises</span>
               </div>
+              {today.is_rest_day ? (
+                <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                  <div className="rounded-lg border border-line bg-black p-4"><p className="font-black">Mobility</p><p className="mt-1 text-sm text-zinc-400">10 minutes hips, hamstrings and upper back</p></div>
+                  <div className="rounded-lg border border-line bg-black p-4"><p className="font-black">Walking target</p><p className="mt-1 text-sm text-zinc-400">7,000-10,000 easy steps</p></div>
+                  <div className="rounded-lg border border-line bg-black p-4"><p className="font-black">Recovery tips</p><p className="mt-1 text-sm text-zinc-400">Hydrate, sleep well, keep stress low</p></div>
+                </div>
+              ) : null}
             </div>
             <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
               {!today.is_rest_day ? (
@@ -63,7 +70,7 @@ export default async function DashboardPage() {
 
       <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Goal" value={plan?.goal ?? onboarding.main_goal} icon="target" />
-        <StatCard label="Training days" value={`${workoutDays || onboarding.training_days_per_week}/week`} icon="dumbbell" />
+        <StatCard label="Training days" value={`${workoutDays || onboarding.selected_training_days?.length || onboarding.training_days_per_week}/week`} icon="dumbbell" />
         <StatCard label="Calories" value={nutritionTarget ? `${nutritionTarget.daily_calories}` : "Set target"} icon="salad" />
         <StatCard label="Completed" value={`${completedThisWeek} this week`} icon="trophy" />
       </div>
@@ -81,13 +88,13 @@ export default async function DashboardPage() {
             {days.map((day) => {
               const isComplete = completedDayIds.has(day.id);
               return (
-                <div key={day.id} className="flex min-h-52 flex-col rounded-lg border border-line bg-black p-4">
+                <div key={day.id} className={`flex min-h-52 flex-col rounded-lg border bg-black p-4 ${day.is_rest_day ? "border-zinc-800" : "border-blood/50"}`}>
                   <p className="text-xs font-bold uppercase tracking-[0.16em] text-zinc-500">{day.day_of_week}</p>
                   <h3 className="mt-2 text-lg font-black">{day.training_focus}</h3>
-                  <p className="mt-2 text-sm text-zinc-400">{day.is_rest_day ? "Rest day" : `${day.planned_exercises?.length ?? 0} exercises`}</p>
-                  <p className="mt-1 text-sm text-zinc-400">{day.estimated_duration} min</p>
-                  <span className={`mt-3 inline-flex w-fit rounded-md px-2 py-1 text-xs font-bold ${isComplete ? "bg-emerald-500/15 text-emerald-300" : "bg-blood/15 text-red-200"}`}>
-                    {isComplete ? "Complete" : day.is_rest_day ? "Recover" : "Not tracked"}
+                  <p className="mt-2 text-sm text-zinc-400">{day.is_rest_day ? "Recovery and mobility" : `${day.planned_exercises?.length ?? 0} exercises`}</p>
+                  {!day.is_rest_day ? <p className="mt-1 text-sm text-zinc-400">{day.estimated_duration} minutes</p> : null}
+                  <span className={`mt-3 inline-flex w-fit rounded-md px-2 py-1 text-xs font-bold ${isComplete ? "bg-emerald-500/15 text-emerald-300" : day.is_rest_day ? "bg-zinc-800 text-zinc-300" : "bg-blood/15 text-red-200"}`}>
+                    Status: {isComplete ? "Complete" : day.is_rest_day ? "Recovery" : "Not Started"}
                   </span>
                   <Link href={day.is_rest_day ? "/plan" : `/track/${day.id}`} className="mt-auto inline-flex items-center justify-center rounded-md border border-line px-3 py-2 text-sm font-bold hover:border-blood">
                     {day.is_rest_day ? "View / Edit" : "View / Edit / Track"}

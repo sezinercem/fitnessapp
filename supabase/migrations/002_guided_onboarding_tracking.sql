@@ -4,6 +4,7 @@ create table if not exists public.onboarding_answers (
   main_goal text not null,
   experience_level text not null,
   training_days_per_week integer not null,
+  selected_training_days text[] not null default '{}',
   equipment_available text not null,
   session_length integer not null,
   nutrition_goal text not null,

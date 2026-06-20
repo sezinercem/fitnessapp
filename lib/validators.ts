@@ -74,7 +74,11 @@ export const mealSchema = z.object({
 export const onboardingSchema = z.object({
   mainGoal: z.enum(["Build muscle", "Lose fat", "Get stronger", "Improve fitness", "Hybrid athlete", "General health"]),
   experienceLevel: z.enum(["Beginner", "Intermediate", "Advanced"]),
-  trainingDaysPerWeek: z.coerce.number().int().min(2).max(7),
+  selectedTrainingDays: z.preprocess((value) => {
+    if (Array.isArray(value)) return value;
+    if (typeof value === "string") return value.split(",").map((day) => day.trim()).filter(Boolean);
+    return [];
+  }, z.array(z.enum(["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"])).min(1).max(7)),
   equipmentAvailable: z.enum(["Bodyweight only", "Dumbbells", "Barbell", "Full gym", "Home gym", "Resistance bands"]),
   sessionLength: z.coerce.number().int().min(20).max(90),
   nutritionGoal: z.enum(["Fat loss", "Maintenance", "Muscle gain", "Performance"]),
@@ -126,6 +130,8 @@ export const easyMealSchema = z.object({
 
 export const trainingDaySchema = z.object({
   trainingFocus: requiredText(100),
+  dayOfWeek: z.enum(["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]),
+  isRestDay: z.coerce.boolean(),
   estimatedDuration: z.coerce.number().int().min(10).max(180),
   whyItExists: text(600),
   recoveryNotes: text(400).optional()

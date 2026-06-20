@@ -12,10 +12,9 @@ const steps = [
   },
   {
     title: "How should training fit your week?",
-    helper: "Choose a realistic schedule. Consistency beats a perfect plan you cannot repeat.",
+    helper: "Choose the exact days you can train. Non-selected days become rest and recovery days.",
     fields: [
       { name: "experienceLevel", label: "Experience level", options: ["Beginner", "Intermediate", "Advanced"] },
-      { name: "trainingDaysPerWeek", label: "Training days per week", options: ["2", "3", "4", "5", "6", "7"] },
       { name: "sessionLength", label: "Session length", options: ["20", "30", "45", "60", "90"] }
     ]
   },
@@ -39,12 +38,14 @@ const steps = [
   }
 ];
 
+const weekDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
 export function OnboardingForm({ action }: { action: (formData: FormData) => Promise<void> }) {
   const [step, setStep] = useState(0);
   const [values, setValues] = useState<Record<string, string>>({
     mainGoal: "Build muscle",
     experienceLevel: "Beginner",
-    trainingDaysPerWeek: "4",
+    selectedTrainingDays: "Monday,Tuesday,Thursday,Saturday",
     equipmentAvailable: "Dumbbells",
     sessionLength: "45",
     nutritionGoal: "Muscle gain",
@@ -56,6 +57,12 @@ export function OnboardingForm({ action }: { action: (formData: FormData) => Pro
   });
   const progress = Math.round(((step + 1) / steps.length) * 100);
   const setValue = (name: string, value: string) => setValues((current) => ({ ...current, [name]: value }));
+  const selectedDays = values.selectedTrainingDays.split(",").filter(Boolean);
+  const toggleDay = (day: string) => {
+    const next = selectedDays.includes(day) ? selectedDays.filter((item) => item !== day) : [...selectedDays, day];
+    setValue("selectedTrainingDays", next.join(","));
+  };
+  const canContinue = step !== 1 || selectedDays.length > 0;
 
   return (
     <form action={action} className="mx-auto max-w-3xl">
@@ -95,6 +102,32 @@ export function OnboardingForm({ action }: { action: (formData: FormData) => Pro
             </label>
           ))}
 
+          {step === 1 ? (
+            <div className="rounded-lg border border-line bg-black p-4">
+              <p className="font-black">Which days would you like to train?</p>
+              <p className="mt-1 text-sm text-zinc-400">Select at least 1 day. Apex will automatically make every other day a rest/recovery day.</p>
+              <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                {weekDays.map((day) => {
+                  const checked = selectedDays.includes(day);
+                  return (
+                    <button
+                      key={day}
+                      type="button"
+                      onClick={() => toggleDay(day)}
+                      className={`flex items-center gap-3 rounded-md border px-4 py-3 text-left text-sm font-bold transition ${checked ? "border-blood bg-blood/15 text-white" : "border-line bg-panel text-zinc-300 hover:border-blood"}`}
+                    >
+                      <span className={`grid h-5 w-5 place-items-center rounded border ${checked ? "border-blood bg-blood" : "border-zinc-600"}`}>
+                        {checked ? "✓" : ""}
+                      </span>
+                      {day}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="mt-3 text-xs font-bold text-zinc-500">{selectedDays.length} selected · {7 - selectedDays.length} recovery days</p>
+            </div>
+          ) : null}
+
           {step === 4 ? (
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="space-y-2 text-sm font-bold text-zinc-300">Current weight<input value={values.currentWeight} onChange={(event) => setValue("currentWeight", event.target.value)} type="number" step="0.1" placeholder="Enter your current weight, e.g. 82kg" required /></label>
@@ -110,7 +143,7 @@ export function OnboardingForm({ action }: { action: (formData: FormData) => Pro
             <ArrowLeft className="h-4 w-4" />Back
           </button>
           {step < steps.length - 1 ? (
-            <Button type="button" onClick={() => setStep((current) => Math.min(steps.length - 1, current + 1))}>
+            <Button type="button" disabled={!canContinue} onClick={() => setStep((current) => Math.min(steps.length - 1, current + 1))}>
               Continue <ArrowRight className="h-4 w-4" />
             </Button>
           ) : (

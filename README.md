@@ -26,6 +26,7 @@ Run the SQL migrations in order from `supabase/migrations` in your Supabase SQL 
 
 1. `001_initial_schema.sql`
 2. `002_guided_onboarding_tracking.sql`
+3. `003_selected_training_days.sql`
 
 They create:
 
