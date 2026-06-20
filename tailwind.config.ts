@@ -20,7 +20,7 @@ const config: Config = {
         glow: "0 0 40px rgba(225, 29, 47, 0.18)"
       },
       fontFamily: {
-        sans: ["var(--font-geist-sans)", "Inter", "system-ui", "sans-serif"]
+        sans: ["var(--font-montserrat)", "Montserrat", "system-ui", "sans-serif"]
       }
     }
   },
