@@ -32,6 +32,10 @@ export default async function SettingsPage() {
             <select name="equipment" defaultValue={profile?.equipment ?? "dumbbells"}>
               {["bodyweight", "dumbbells", "barbell", "gym", "resistance bands", "full home gym"].map((item) => <option key={item}>{item}</option>)}
             </select>
+            <select name="defaultWeightUnit" defaultValue={profile?.default_weight_unit ?? "kg"}>
+              <option value="kg">kg</option>
+              <option value="lb">lb</option>
+            </select>
             <Button><Save className="h-4 w-4" />Save profile</Button>
           </form>
         </Card>

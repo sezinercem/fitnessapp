@@ -17,9 +17,11 @@ import {
   plannedExerciseSchema,
   planSchema,
   profileSchema,
+  sessionSetSchema,
   signupSchema,
   trainingDaySchema,
-  trackingSetSchema
+  trackingSetSchema,
+  finishSessionSchema
 } from "@/lib/validators";
 import { planTemplates } from "@/lib/sample-data";
 import { buildGeneratedPlan, buildNutrition } from "@/lib/onboarding-generator";
@@ -302,7 +304,8 @@ export async function updateProfileAction(formData: FormData) {
     fullName: formData.get("fullName"),
     goal: formData.get("goal"),
     experience: formData.get("experience"),
-    equipment: formData.get("equipment")
+    equipment: formData.get("equipment"),
+    defaultWeightUnit: formData.get("defaultWeightUnit") || "kg"
   });
   const { error } = await supabase.from("profiles").upsert({
     id: user.id,
@@ -310,7 +313,8 @@ export async function updateProfileAction(formData: FormData) {
     full_name: parsed.fullName,
     goal: parsed.goal,
     experience: parsed.experience,
-    equipment: parsed.equipment
+    equipment: parsed.equipment,
+    default_weight_unit: parsed.defaultWeightUnit
   });
   if (error) throw new Error(error.message);
   revalidatePath("/settings");
@@ -521,24 +525,158 @@ export async function startWorkoutAction(trainingDayId: string) {
   const { supabase, user } = await currentUser();
   const { data: day } = await supabase
     .from("training_days")
-    .select("id, weekly_plan_id, training_focus")
+    .select("id, weekly_plan_id, training_focus, day_of_week, planned_exercises(*)")
     .eq("id", trainingDayId)
     .eq("user_id", user.id)
     .single();
   if (!day) throw new Error("Training day not found.");
-  const { data: log, error } = await supabase
-    .from("workout_logs")
+  const today = new Date().toISOString().slice(0, 10);
+  const { data: session, error } = await supabase
+    .from("workout_sessions")
     .insert({
       user_id: user.id,
-      weekly_plan_id: day.weekly_plan_id,
       training_day_id: day.id,
-      completed_at: new Date().toISOString(),
-      notes: `Started ${day.training_focus}`
+      date: today,
+      day_of_week: day.day_of_week,
+      workout_name: day.training_focus,
+      status: "started",
+      started_at: new Date().toISOString()
     })
     .select("id")
     .single();
-  if (error || !log) throw new Error(error?.message ?? "Could not start workout.");
-  redirect(`/track/${day.id}?log=${log.id}`);
+  if (error || !session) throw new Error(error?.message ?? "Could not start workout.");
+
+  const plannedExercises = ((day.planned_exercises ?? []) as Array<{
+    id: string;
+    exercise_name: string;
+    sets: number;
+    reps: string;
+    notes: string | null;
+    sort_order: number;
+  }>).sort((a, b) => a.sort_order - b.sort_order);
+
+  if (plannedExercises.length) {
+    await supabase.from("workout_session_exercises").insert(plannedExercises.map((exercise, index) => ({
+      user_id: user.id,
+      workout_session_id: session.id,
+      planned_exercise_id: exercise.id,
+      exercise_name: exercise.exercise_name,
+      exercise_order: index,
+      status: "started",
+      planned_sets: exercise.sets,
+      planned_reps: exercise.reps,
+      notes: exercise.notes
+    })));
+  }
+
+  redirect(`/workout/${session.id}`);
+}
+
+export async function addWorkoutSessionSetAction(formData: FormData) {
+  const { supabase, user } = await currentUser();
+  const parsed = sessionSetSchema.parse({
+    workoutSessionId: formData.get("workoutSessionId"),
+    workoutSessionExerciseId: formData.get("workoutSessionExerciseId"),
+    exerciseName: formData.get("exerciseName"),
+    setNumber: formData.get("setNumber"),
+    weight: formData.get("weight"),
+    weightUnit: formData.get("weightUnit"),
+    reps: formData.get("reps"),
+    restSeconds: formData.get("restSeconds"),
+    rpe: formData.get("rpe"),
+    notes: formData.get("notes")
+  });
+  const { count } = await supabase
+    .from("workout_sessions")
+    .select("*", { count: "exact", head: true })
+    .eq("id", parsed.workoutSessionId)
+    .eq("user_id", user.id);
+  if (!count) throw new Error("Workout session not found.");
+  const { data: inserted, error } = await supabase.from("workout_sets").insert({
+    user_id: user.id,
+    workout_session_id: parsed.workoutSessionId,
+    workout_session_exercise_id: parsed.workoutSessionExerciseId,
+    exercise_name: parsed.exerciseName,
+    set_number: parsed.setNumber,
+    weight: parsed.weight,
+    weight_unit: parsed.weightUnit,
+    reps: parsed.reps,
+    rest_seconds: parsed.restSeconds,
+    rpe: parsed.rpe,
+    notes: parsed.notes,
+    is_complete: true
+  }).select("id").single();
+  if (error || !inserted) throw new Error(error?.message ?? "Could not save set.");
+
+  const numericWeight = Number.parseFloat(parsed.weight || "0") || 0;
+  const volume = numericWeight * parsed.reps;
+  await supabase.from("exercise_history").insert({
+    user_id: user.id,
+    exercise_name: parsed.exerciseName,
+    workout_session_id: parsed.workoutSessionId,
+    workout_set_id: inserted.id,
+    weight: numericWeight,
+    weight_unit: parsed.weightUnit,
+    reps: parsed.reps,
+    volume
+  });
+
+  const { data: currentPr } = await supabase
+    .from("personal_records")
+    .select("*")
+    .eq("user_id", user.id)
+    .eq("exercise_name", parsed.exerciseName)
+    .eq("weight_unit", parsed.weightUnit)
+    .maybeSingle();
+  const shouldUpdatePr = !currentPr || volume > Number(currentPr.best_volume ?? 0) || numericWeight > Number(currentPr.best_weight ?? 0);
+  if (shouldUpdatePr) {
+    await supabase.from("personal_records").upsert({
+      user_id: user.id,
+      exercise_name: parsed.exerciseName,
+      weight_unit: parsed.weightUnit,
+      best_weight: Math.max(numericWeight, Number(currentPr?.best_weight ?? 0)),
+      best_reps: Math.max(parsed.reps, Number(currentPr?.best_reps ?? 0)),
+      best_volume: Math.max(volume, Number(currentPr?.best_volume ?? 0)),
+      achieved_at: new Date().toISOString()
+    }, { onConflict: "user_id,exercise_name,weight_unit" });
+  }
+
+  revalidatePath(`/workout/${parsed.workoutSessionId}`);
+  revalidatePath("/progress");
+}
+
+export async function removeWorkoutSessionSetAction(setId: string, sessionId: string) {
+  const { supabase, user } = await currentUser();
+  await supabase.from("workout_sets").delete().eq("id", setId).eq("user_id", user.id);
+  revalidatePath(`/workout/${sessionId}`);
+}
+
+export async function updateSessionExerciseStatusAction(exerciseId: string, sessionId: string, status: "completed" | "skipped" | "started") {
+  const { supabase, user } = await currentUser();
+  await supabase
+    .from("workout_session_exercises")
+    .update({ status })
+    .eq("id", exerciseId)
+    .eq("user_id", user.id);
+  revalidatePath(`/workout/${sessionId}`);
+}
+
+export async function finishWorkoutSessionAction(sessionId: string, formData: FormData) {
+  const { supabase, user } = await currentUser();
+  const parsed = finishSessionSchema.parse({ notes: formData.get("notes") });
+  await supabase
+    .from("workout_sessions")
+    .update({
+      status: "completed",
+      completed_at: new Date().toISOString(),
+      notes: parsed.notes
+    })
+    .eq("id", sessionId)
+    .eq("user_id", user.id);
+  revalidatePath(`/workout/${sessionId}`);
+  revalidatePath("/dashboard");
+  revalidatePath("/progress");
+  redirect(`/workout/${sessionId}?summary=1`);
 }
 
 export async function addWorkoutSetAction(formData: FormData) {

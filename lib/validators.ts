@@ -18,7 +18,8 @@ export const profileSchema = z.object({
   fullName: text(80),
   goal: text(40),
   experience: text(40),
-  equipment: text(80)
+  equipment: text(80),
+  defaultWeightUnit: z.enum(["kg", "lb"]).default("kg")
 });
 
 export const recommendationSchema = z.object({
@@ -99,6 +100,23 @@ export const trackingSetSchema = z.object({
   rpe: z.coerce.number().min(1).max(10),
   notes: text(400).optional(),
   isComplete: z.coerce.boolean().optional()
+});
+
+export const sessionSetSchema = z.object({
+  workoutSessionId: z.string().uuid(),
+  workoutSessionExerciseId: z.string().uuid(),
+  exerciseName: requiredText(100),
+  setNumber: z.coerce.number().int().min(1).max(30),
+  weight: text(30).optional(),
+  weightUnit: z.enum(["kg", "lb"]),
+  reps: z.coerce.number().int().min(0).max(300),
+  restSeconds: z.coerce.number().int().min(0).max(1200),
+  rpe: z.coerce.number().min(1).max(10),
+  notes: text(500).optional()
+});
+
+export const finishSessionSchema = z.object({
+  notes: text(700).optional()
 });
 
 export const bodyWeightSchema = z.object({

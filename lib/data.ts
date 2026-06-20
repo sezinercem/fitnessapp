@@ -46,7 +46,7 @@ export async function getGuidedData() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const [onboarding, weeklyPlan, nutritionTarget, meals, logs, sets, weights, measurements] = await Promise.all([
+  const [onboarding, weeklyPlan, nutritionTarget, meals, logs, sessions, sets, weights, measurements] = await Promise.all([
     supabase.from("onboarding_answers").select("*").eq("user_id", user.id).maybeSingle(),
     supabase
       .from("weekly_training_plans")
@@ -64,6 +64,7 @@ export async function getGuidedData() {
       .maybeSingle(),
     supabase.from("meals").select("*").eq("user_id", user.id).order("sort_order"),
     supabase.from("workout_logs").select("*").eq("user_id", user.id).order("completed_at", { ascending: false }).limit(25),
+    supabase.from("workout_sessions").select("*").eq("user_id", user.id).order("started_at", { ascending: false }).limit(25),
     supabase.from("workout_sets").select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(200),
     supabase.from("body_weight_logs").select("*").eq("user_id", user.id).order("logged_at", { ascending: false }).limit(20),
     supabase.from("body_measurements").select("*").eq("user_id", user.id).order("logged_at", { ascending: false }).limit(20)
@@ -76,6 +77,7 @@ export async function getGuidedData() {
     nutritionTarget: nutritionTarget.data,
     easyMeals: meals.data ?? [],
     logs: logs.data ?? [],
+    sessions: sessions.data ?? [],
     sets: sets.data ?? [],
     weights: weights.data ?? [],
     measurements: measurements.data ?? []

@@ -27,6 +27,7 @@ Run the SQL migrations in order from `supabase/migrations` in your Supabase SQL 
 1. `001_initial_schema.sql`
 2. `002_guided_onboarding_tracking.sql`
 3. `003_selected_training_days.sql`
+4. `004_workout_sessions_progressive_overload.sql`
 
 They create:
 
@@ -43,6 +44,10 @@ They create:
 - `training_days`
 - `planned_exercises`
 - `workout_sets`
+- `workout_sessions`
+- `workout_session_exercises`
+- `exercise_history`
+- `personal_records`
 - `body_weight_logs`
 - `body_measurements`
 - `nutrition_targets`

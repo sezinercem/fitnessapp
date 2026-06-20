@@ -3,18 +3,19 @@ import { redirect } from "next/navigation";
 import { CalendarCheck, Dumbbell, Flame, Pencil, Play, Salad } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { Card, EmptyState, LinkButton, ProgressRing, StatCard } from "@/components/ui";
+import { startWorkoutAction } from "@/lib/actions";
 import { getGuidedData } from "@/lib/data";
 import type { TrainingDay, WeeklyTrainingPlan } from "@/lib/types";
 
 export default async function DashboardPage() {
-  const { onboarding, weeklyPlan, nutritionTarget, logs } = await getGuidedData();
+  const { onboarding, weeklyPlan, nutritionTarget, logs, sessions } = await getGuidedData();
   if (!onboarding) redirect("/onboarding");
 
   const plan = weeklyPlan as WeeklyTrainingPlan | null;
   const days = ((plan?.training_days ?? []) as TrainingDay[]).sort((a, b) => a.day_index - b.day_index);
   const todayIndex = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
   const today = days.find((day) => day.day_index === todayIndex) ?? days[0];
-  const completedDayIds = new Set(logs.map((log) => log.training_day_id).filter(Boolean));
+  const completedDayIds = new Set(sessions.filter((session) => session.status === "completed").map((session) => session.training_day_id).filter(Boolean));
   const completedThisWeek = days.filter((day) => completedDayIds.has(day.id)).length;
   const workoutDays = days.filter((day) => !day.is_rest_day).length;
   const consistency = workoutDays ? Math.round((completedThisWeek / workoutDays) * 100) : 0;
@@ -34,10 +35,10 @@ export default async function DashboardPage() {
         <Card className="mt-6 border-blood/40 bg-gradient-to-br from-panel to-black">
           <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-center">
             <div>
-              <p className="text-sm font-bold uppercase tracking-[0.2em] text-ember">Today’s plan</p>
-              <h2 className="mt-2 text-3xl font-black">{today.is_rest_day ? "Today is a recovery day" : `${today.day_of_week}: ${today.training_focus}`}</h2>
+              <p className="text-sm font-bold uppercase tracking-[0.2em] text-ember">Today’s Training</p>
+              <h2 className="mt-2 text-3xl font-black">{today.is_rest_day ? "Rest Day" : today.training_focus}</h2>
               <p className="mt-3 max-w-2xl text-zinc-400">
-                {today.is_rest_day ? "Your goal today is to recover well so your next training day feels stronger." : today.why_it_exists}
+                {today.is_rest_day ? "Recovery, walking and mobility recommended." : today.why_it_exists}
               </p>
               <div className="mt-5 flex flex-wrap gap-2">
                 <span className="rounded-md border border-line bg-black px-3 py-2 text-sm font-bold">{today.is_rest_day ? "Rest day" : "Workout day"}</span>
@@ -54,12 +55,14 @@ export default async function DashboardPage() {
             </div>
             <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
               {!today.is_rest_day ? (
-                <Link href={`/track/${today.id}`} className="inline-flex items-center justify-center gap-2 rounded-md bg-blood px-5 py-3 text-sm font-black text-white hover:bg-ember">
-                  <Play className="h-4 w-4" />Start workout
-                </Link>
+                <form action={startWorkoutAction.bind(null, today.id)}>
+                  <button className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-blood px-5 py-3 text-sm font-black text-white hover:bg-ember">
+                    <Play className="h-4 w-4" />Start Workout
+                  </button>
+                </form>
               ) : null}
               <Link href="/plan" className="inline-flex items-center justify-center gap-2 rounded-md border border-line px-5 py-3 text-sm font-black text-zinc-200 hover:border-blood">
-                <Pencil className="h-4 w-4" />Edit today’s plan
+                <Pencil className="h-4 w-4" />{today.is_rest_day ? "View Recovery Plan" : "Edit today’s plan"}
               </Link>
             </div>
           </div>
@@ -96,9 +99,15 @@ export default async function DashboardPage() {
                   <span className={`mt-3 inline-flex w-fit rounded-md px-2 py-1 text-xs font-bold ${isComplete ? "bg-emerald-500/15 text-emerald-300" : day.is_rest_day ? "bg-zinc-800 text-zinc-300" : "bg-blood/15 text-red-200"}`}>
                     Status: {isComplete ? "Complete" : day.is_rest_day ? "Recovery" : "Not Started"}
                   </span>
-                  <Link href={day.is_rest_day ? "/plan" : `/track/${day.id}`} className="mt-auto inline-flex items-center justify-center rounded-md border border-line px-3 py-2 text-sm font-bold hover:border-blood">
-                    {day.is_rest_day ? "View / Edit" : "View / Edit / Track"}
-                  </Link>
+                  {day.is_rest_day ? (
+                    <Link href="/plan" className="mt-auto inline-flex items-center justify-center rounded-md border border-line px-3 py-2 text-sm font-bold hover:border-blood">
+                      View Recovery Plan
+                    </Link>
+                  ) : (
+                    <form action={startWorkoutAction.bind(null, day.id)} className="mt-auto">
+                      <button className="w-full rounded-md border border-line px-3 py-2 text-sm font-bold hover:border-blood">Start Workout</button>
+                    </form>
+                  )}
                 </div>
               );
             })}
@@ -121,7 +130,9 @@ export default async function DashboardPage() {
           <Card>
             <h2 className="text-xl font-black">Recent activity</h2>
             <div className="mt-4 space-y-2">
-              {logs.length ? logs.slice(0, 4).map((log) => (
+              {sessions.length ? sessions.slice(0, 4).map((session) => (
+                <p key={session.id} className="rounded-md bg-black p-3 text-sm text-zinc-300"><Flame className="mr-2 inline h-4 w-4 text-ember" />{session.workout_name} · {new Date(session.started_at).toLocaleDateString()} · {session.status}</p>
+              )) : logs.length ? logs.slice(0, 4).map((log) => (
                 <p key={log.id} className="rounded-md bg-black p-3 text-sm text-zinc-300"><Flame className="mr-2 inline h-4 w-4 text-ember" />Workout tracked · {new Date(log.completed_at).toLocaleDateString()}</p>
               )) : <p className="text-sm text-zinc-400">No workouts tracked yet. Start with today’s plan.</p>}
             </div>

@@ -11,9 +11,9 @@ function numberFromWeight(weight: string | null) {
 }
 
 export default async function ProgressPage() {
-  const { weeklyPlan, logs, sets, weights, measurements } = await getGuidedData();
+  const { weeklyPlan, logs, sessions, sets, weights, measurements } = await getGuidedData();
   const workoutDays = weeklyPlan?.training_days?.filter((day: { is_rest_day: boolean }) => !day.is_rest_day).length ?? 0;
-  const completedThisWeek = Math.min(logs.length, workoutDays || logs.length);
+  const completedThisWeek = Math.min(sessions.filter((session) => session.status === "completed").length || logs.length, workoutDays || sessions.length || logs.length);
   const consistency = workoutDays ? Math.min(100, Math.round((completedThisWeek / workoutDays) * 100)) : 0;
   const workoutSets = sets as WorkoutSet[];
   const totalVolume = workoutSets.reduce((sum, set) => sum + numberFromWeight(set.weight) * (set.reps ?? 0), 0);
@@ -44,7 +44,12 @@ export default async function ProgressPage() {
         <Card>
           <h2 className="text-2xl font-black">Workout history</h2>
           <div className="mt-4 grid gap-2">
-            {logs.length ? logs.slice(0, 8).map((log) => (
+            {sessions.length ? sessions.slice(0, 8).map((session) => (
+              <div key={session.id} className="rounded-lg border border-line bg-black p-4">
+                <p className="font-black"><Activity className="mr-2 inline h-4 w-4 text-ember" />{session.workout_name}</p>
+                <p className="mt-1 text-sm text-zinc-400">{new Date(session.started_at).toLocaleString()} · {session.status}</p>
+              </div>
+            )) : logs.length ? logs.slice(0, 8).map((log) => (
               <div key={log.id} className="rounded-lg border border-line bg-black p-4">
                 <p className="font-black"><Activity className="mr-2 inline h-4 w-4 text-ember" />Workout tracked</p>
                 <p className="mt-1 text-sm text-zinc-400">{new Date(log.completed_at).toLocaleString()} · {log.notes}</p>

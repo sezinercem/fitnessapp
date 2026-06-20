@@ -5,6 +5,7 @@ export type Profile = {
   goal: string | null;
   experience: string | null;
   equipment: string | null;
+  default_weight_unit?: "kg" | "lb" | null;
   created_at: string;
   updated_at: string;
 };
@@ -169,9 +170,52 @@ export type Meal = {
 export type WorkoutSet = {
   id: string;
   workout_log_id: string;
+  workout_session_id?: string | null;
+  workout_session_exercise_id?: string | null;
   exercise_name: string;
   set_number: number;
   weight: string | null;
+  weight_unit?: "kg" | "lb";
+  reps: number | null;
+  rest_seconds: number | null;
+  rpe: number | null;
+  notes: string | null;
+  is_complete: boolean;
+};
+
+export type WorkoutSession = {
+  id: string;
+  user_id: string;
+  training_day_id: string;
+  date: string;
+  day_of_week: string;
+  workout_name: string;
+  status: "started" | "completed" | "skipped";
+  started_at: string;
+  completed_at: string | null;
+  notes: string | null;
+};
+
+export type WorkoutSessionExercise = {
+  id: string;
+  workout_session_id: string;
+  planned_exercise_id: string | null;
+  exercise_name: string;
+  exercise_order: number;
+  status: "started" | "completed" | "skipped";
+  planned_sets: number;
+  planned_reps: string | null;
+  notes: string | null;
+};
+
+export type SessionSet = {
+  id: string;
+  workout_session_id: string;
+  workout_session_exercise_id: string | null;
+  exercise_name: string;
+  set_number: number;
+  weight: string | null;
+  weight_unit: "kg" | "lb";
   reps: number | null;
   rest_seconds: number | null;
   rpe: number | null;
