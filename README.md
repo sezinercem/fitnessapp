@@ -29,6 +29,7 @@ Run the SQL migrations in order from `supabase/migrations` in your Supabase SQL 
 3. `003_selected_training_days.sql`
 4. `004_workout_sessions_progressive_overload.sql`
 5. `005_exercise_categories_and_split_preferences.sql`
+6. `006_nutrition_food_logging.sql`
 
 They create:
 
@@ -53,6 +54,10 @@ They create:
 - `body_measurements`
 - `nutrition_targets`
 - `meals`
+- `global_foods`
+- `user_foods`
+- `meal_logs`
+- `meal_log_items`
 
 RLS is enabled on every table. User-owned tables use `auth.uid()` policies so users can only read, create, edit, and delete their own rows. Child tables also validate that their parent record belongs to the authenticated user.
 
@@ -68,6 +73,7 @@ RLS is enabled on every table. User-owned tables use `auth.uid()` policies so us
 - Workout plan editing, day rename, exercise add/edit/replace/delete, completion logging
 - Recommendation picker based on goal, experience, and equipment
 - Editable nutrition targets and meals with plain-English purpose text
+- Nutrition Today food logging with searchable foods, manual entries, saved custom foods, daily totals, macros, and rule-based suggestions
 - Exercise library with polished coded visual explainers
 - Profile/settings page
 - Zod validation, input sanitisation, best-effort auth action rate limiting

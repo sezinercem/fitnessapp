@@ -1,12 +1,13 @@
 import { Plus, Save, Trash2 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { Button, Card, EmptyState, StatCard } from "@/components/ui";
+import { FoodLogger } from "@/components/nutrition/food-logger";
 import { addEasyMealAction, deleteEasyMealAction, updateEasyMealAction } from "@/lib/actions";
-import { getGuidedData } from "@/lib/data";
+import { getNutritionLoggingData } from "@/lib/data";
 import type { Meal, NutritionTarget } from "@/lib/types";
 
 export default async function NutritionPage() {
-  const { nutritionTarget, easyMeals } = await getGuidedData();
+  const { nutritionTarget, easyMeals, globalFoods, userFoods, mealLogs, suggestions } = await getNutritionLoggingData();
   const target = nutritionTarget as NutritionTarget | null;
   const meals = ((easyMeals ?? []) as Meal[]).sort((a, b) => a.sort_order - b.sort_order);
 
@@ -18,6 +19,8 @@ export default async function NutritionPage() {
 
       {target ? (
         <>
+          <FoodLogger target={target} globalFoods={globalFoods} userFoods={userFoods} mealLogs={mealLogs} suggestions={suggestions} />
+
           <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             <StatCard label="Calories" value={`${target.daily_calories}`} icon="flame" />
             <StatCard label="Protein" value={`${target.protein_target}g`} icon="dumbbell" />

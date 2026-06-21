@@ -170,3 +170,33 @@ export const plannedExerciseSchema = z.object({
   restSeconds: z.coerce.number().int().min(0).max(900),
   notes: text(400).optional()
 });
+
+export const mealTypeSchema = z.enum(["breakfast", "lunch", "dinner", "snacks"]);
+
+export const foodLogSchema = z.object({
+  mealType: mealTypeSchema,
+  foodId: z.string().uuid().optional().or(z.literal("")),
+  foodSource: z.enum(["global", "user", "manual"]).default("manual"),
+  quantity: z.coerce.number().min(0.01).max(1000),
+  servingUnit: text(60).optional(),
+  manualFoodName: text(120).optional(),
+  manualBrand: text(80).optional(),
+  manualServingSize: z.coerce.number().min(0.01).max(10000).optional(),
+  manualServingUnit: text(60).optional(),
+  manualCalories: z.coerce.number().min(0).max(10000).optional(),
+  manualProtein: z.coerce.number().min(0).max(1000).optional(),
+  manualCarbs: z.coerce.number().min(0).max(1500).optional(),
+  manualFat: z.coerce.number().min(0).max(1000).optional(),
+  saveToMyFoods: z.coerce.boolean().optional(),
+  notes: text(300).optional()
+});
+
+export const mealLogItemUpdateSchema = z.object({
+  quantity: z.coerce.number().min(0.01).max(1000),
+  servingUnit: text(60).optional(),
+  caloriesPerServing: z.coerce.number().min(0).max(10000),
+  proteinPerServing: z.coerce.number().min(0).max(1000),
+  carbsPerServing: z.coerce.number().min(0).max(1500),
+  fatPerServing: z.coerce.number().min(0).max(1000),
+  notes: text(300).optional()
+});

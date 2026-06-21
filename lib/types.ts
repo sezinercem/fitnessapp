@@ -172,6 +172,55 @@ export type Meal = {
   sort_order: number;
 };
 
+export type FoodSource = "local" | "manual" | "api";
+
+export type Food = {
+  id: string;
+  user_id?: string | null;
+  food_name: string;
+  brand: string | null;
+  serving_size: number;
+  serving_unit: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  source: FoodSource;
+};
+
+export type MealType = "breakfast" | "lunch" | "dinner" | "snacks";
+
+export type MealLogItem = {
+  id: string;
+  user_id: string;
+  meal_log_id: string;
+  food_id: string | null;
+  food_source: "global" | "user" | "manual";
+  food_name: string;
+  brand: string | null;
+  serving_size: number;
+  serving_unit: string;
+  quantity: number;
+  calories_per_serving: number;
+  protein_per_serving: number;
+  carbs_per_serving: number;
+  fat_per_serving: number;
+  total_calories: number;
+  total_protein: number;
+  total_carbs: number;
+  total_fat: number;
+  notes: string | null;
+};
+
+export type MealLog = {
+  id: string;
+  user_id: string;
+  logged_date: string;
+  meal_type: MealType;
+  notes: string | null;
+  meal_log_items: MealLogItem[];
+};
+
 export type WorkoutSet = {
   id: string;
   workout_log_id: string;

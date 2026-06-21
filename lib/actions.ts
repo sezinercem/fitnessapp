@@ -19,13 +19,44 @@ import {
   profileSchema,
   sessionSetSchema,
   signupSchema,
+  finishSessionSchema,
+  foodLogSchema,
+  mealLogItemUpdateSchema,
   trainingDaySchema,
-  trackingSetSchema,
-  finishSessionSchema
+  trackingSetSchema
 } from "@/lib/validators";
 import { planTemplates } from "@/lib/sample-data";
 import { buildGeneratedPlan, buildNutrition } from "@/lib/onboarding-generator";
 import { getExerciseCategory, isExerciseCompatible, normaliseCategory } from "@/lib/exercise-catalog";
+
+function totalsFromServing(quantity: number, calories: number, protein: number, carbs: number, fat: number) {
+  return {
+    total_calories: Number((quantity * calories).toFixed(2)),
+    total_protein: Number((quantity * protein).toFixed(2)),
+    total_carbs: Number((quantity * carbs).toFixed(2)),
+    total_fat: Number((quantity * fat).toFixed(2))
+  };
+}
+
+async function getOrCreateMealLog(supabase: Awaited<ReturnType<typeof createClient>>, userId: string, mealType: string) {
+  const today = new Date().toISOString().slice(0, 10);
+  const { data: existing } = await supabase
+    .from("meal_logs")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("logged_date", today)
+    .eq("meal_type", mealType)
+    .maybeSingle();
+  if (existing) return existing.id as string;
+
+  const { data: created, error } = await supabase
+    .from("meal_logs")
+    .insert({ user_id: userId, logged_date: today, meal_type: mealType })
+    .select("id")
+    .single();
+  if (error || !created) throw new Error(error?.message ?? "Could not create meal log.");
+  return created.id as string;
+}
 
 async function currentUser() {
   const supabase = await createClient();
@@ -994,6 +1025,146 @@ export async function deleteEasyMealAction(mealId: string) {
   const { supabase, user } = await currentUser();
   await supabase.from("meals").delete().eq("id", mealId).eq("user_id", user.id);
   revalidatePath("/nutrition");
+}
+
+export async function addMealLogItemAction(formData: FormData) {
+  const { supabase, user } = await currentUser();
+  const parsed = foodLogSchema.parse({
+    mealType: formData.get("mealType"),
+    foodId: formData.get("foodId") || "",
+    foodSource: formData.get("foodSource") || "manual",
+    quantity: formData.get("quantity"),
+    servingUnit: formData.get("servingUnit"),
+    manualFoodName: formData.get("manualFoodName"),
+    manualBrand: formData.get("manualBrand"),
+    manualServingSize: formData.get("manualServingSize") || undefined,
+    manualServingUnit: formData.get("manualServingUnit"),
+    manualCalories: formData.get("manualCalories") || undefined,
+    manualProtein: formData.get("manualProtein") || undefined,
+    manualCarbs: formData.get("manualCarbs") || undefined,
+    manualFat: formData.get("manualFat") || undefined,
+    saveToMyFoods: formData.get("saveToMyFoods") === "on",
+    notes: formData.get("notes")
+  });
+
+  let food = {
+    id: parsed.foodId || null,
+    food_name: parsed.manualFoodName || "Manual food",
+    brand: parsed.manualBrand || null,
+    serving_size: parsed.manualServingSize || 1,
+    serving_unit: parsed.manualServingUnit || parsed.servingUnit || "serving",
+    calories: parsed.manualCalories || 0,
+    protein: parsed.manualProtein || 0,
+    carbs: parsed.manualCarbs || 0,
+    fat: parsed.manualFat || 0
+  };
+  let foodSource: "global" | "user" | "manual" = "manual";
+
+  if (parsed.foodId && parsed.foodSource !== "manual") {
+    const table = parsed.foodSource === "global" ? "global_foods" : "user_foods";
+    let query = supabase.from(table).select("*").eq("id", parsed.foodId);
+    if (parsed.foodSource === "user") query = query.eq("user_id", user.id);
+    const { data, error } = await query.single();
+    if (error || !data) throw new Error("Food not found.");
+    food = {
+      id: data.id,
+      food_name: data.food_name,
+      brand: data.brand,
+      serving_size: Number(data.serving_size),
+      serving_unit: data.serving_unit,
+      calories: Number(data.calories),
+      protein: Number(data.protein),
+      carbs: Number(data.carbs),
+      fat: Number(data.fat)
+    };
+    foodSource = parsed.foodSource;
+  } else if (!parsed.manualFoodName || parsed.manualCalories === undefined) {
+    throw new Error("Add a food name and calories for manual entries.");
+  }
+
+  if (parsed.saveToMyFoods && foodSource === "manual") {
+    const { data: savedFood, error } = await supabase
+      .from("user_foods")
+      .insert({
+        user_id: user.id,
+        food_name: food.food_name,
+        brand: food.brand,
+        serving_size: food.serving_size,
+        serving_unit: food.serving_unit,
+        calories: food.calories,
+        protein: food.protein,
+        carbs: food.carbs,
+        fat: food.fat,
+        source: "manual"
+      })
+      .select("id")
+      .single();
+    if (error) throw new Error(error.message);
+    food.id = savedFood?.id ?? null;
+    foodSource = "user";
+  }
+
+  const mealLogId = await getOrCreateMealLog(supabase, user.id, parsed.mealType);
+  const totals = totalsFromServing(parsed.quantity, food.calories, food.protein, food.carbs, food.fat);
+
+  const { error } = await supabase.from("meal_log_items").insert({
+    user_id: user.id,
+    meal_log_id: mealLogId,
+    food_id: food.id,
+    food_source: foodSource,
+    food_name: food.food_name,
+    brand: food.brand,
+    serving_size: food.serving_size,
+    serving_unit: parsed.servingUnit || food.serving_unit,
+    quantity: parsed.quantity,
+    calories_per_serving: food.calories,
+    protein_per_serving: food.protein,
+    carbs_per_serving: food.carbs,
+    fat_per_serving: food.fat,
+    ...totals,
+    notes: parsed.notes
+  });
+  if (error) throw new Error(error.message);
+  revalidatePath("/nutrition");
+  revalidatePath("/dashboard");
+}
+
+export async function updateMealLogItemAction(itemId: string, formData: FormData) {
+  const { supabase, user } = await currentUser();
+  const parsed = mealLogItemUpdateSchema.parse({
+    quantity: formData.get("quantity"),
+    servingUnit: formData.get("servingUnit"),
+    caloriesPerServing: formData.get("caloriesPerServing"),
+    proteinPerServing: formData.get("proteinPerServing"),
+    carbsPerServing: formData.get("carbsPerServing"),
+    fatPerServing: formData.get("fatPerServing"),
+    notes: formData.get("notes")
+  });
+  const totals = totalsFromServing(parsed.quantity, parsed.caloriesPerServing, parsed.proteinPerServing, parsed.carbsPerServing, parsed.fatPerServing);
+  const { error } = await supabase
+    .from("meal_log_items")
+    .update({
+      quantity: parsed.quantity,
+      serving_unit: parsed.servingUnit,
+      calories_per_serving: parsed.caloriesPerServing,
+      protein_per_serving: parsed.proteinPerServing,
+      carbs_per_serving: parsed.carbsPerServing,
+      fat_per_serving: parsed.fatPerServing,
+      ...totals,
+      notes: parsed.notes
+    })
+    .eq("id", itemId)
+    .eq("user_id", user.id);
+  if (error) throw new Error(error.message);
+  revalidatePath("/nutrition");
+  revalidatePath("/dashboard");
+}
+
+export async function deleteMealLogItemAction(itemId: string) {
+  const { supabase, user } = await currentUser();
+  await supabase.from("meal_log_items").delete().eq("id", itemId).eq("user_id", user.id);
+  revalidatePath("/nutrition");
+  revalidatePath("/dashboard");
 }
 
 export async function addBodyWeightAction(formData: FormData) {
