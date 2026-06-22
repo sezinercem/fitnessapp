@@ -43,6 +43,11 @@ const steps = [
     title: "Your starting point",
     helper: "These numbers help estimate calories and create progress trackers.",
     fields: []
+  },
+  {
+    title: "Preview your first week",
+    helper: "Check the structure before saving. You can edit exercises, sets, reps and rest periods immediately in Training.",
+    fields: []
   }
 ];
 
@@ -58,6 +63,8 @@ const focusOptions = [
   ["mobility", "Mobility"],
   ["rest", "Rest"]
 ];
+
+const recommendedFocus = ["Push", "Pull", "Legs", "Upper Body", "Mobility", "Full Body", "Conditioning"];
 
 export function OnboardingForm({ action }: { action: (formData: FormData) => Promise<void> }) {
   const [step, setStep] = useState(0);
@@ -100,7 +107,7 @@ export function OnboardingForm({ action }: { action: (formData: FormData) => Pro
         <input key={name} type="hidden" name={name} value={value} />
       ))}
       <div className="mb-6">
-        <div className="flex items-center justify-between text-sm font-bold text-zinc-400">
+        <div className="flex items-center justify-between text-sm font-bold text-slate-500">
           <span>Step {step + 1} of {steps.length}</span>
           <span>{progress}% complete</span>
         </div>
@@ -111,18 +118,18 @@ export function OnboardingForm({ action }: { action: (formData: FormData) => Pro
 
       <Card>
         <div className="flex items-start gap-3">
-          <span className="grid h-10 w-10 place-items-center rounded-md bg-blood/15 text-ember">
+          <span className="grid h-10 w-10 place-items-center rounded-md bg-emerald-100 text-emerald-600">
             <CheckCircle2 className="h-5 w-5" />
           </span>
           <div>
             <h1 className="text-3xl font-black">{steps[step].title}</h1>
-            <p className="mt-2 text-sm text-zinc-400">{steps[step].helper}</p>
+            <p className="mt-2 text-sm text-slate-500">{steps[step].helper}</p>
           </div>
         </div>
 
         <div className="mt-6 grid gap-4">
           {steps[step].fields.map((field) => (
-            <label key={field.name} className="space-y-2 text-sm font-bold text-zinc-300">
+            <label key={field.name} className="space-y-2 text-sm font-bold text-slate-600">
               {field.label}
               <select value={values[field.name]} onChange={(event) => setValue(field.name, event.target.value)} required>
                 {field.options.map((option) => (
@@ -135,9 +142,9 @@ export function OnboardingForm({ action }: { action: (formData: FormData) => Pro
           ))}
 
           {step === 1 ? (
-            <div className="rounded-lg border border-line bg-black p-4">
+            <div className="rounded-lg border border-line bg-slate-50 p-4">
               <p className="font-black">Which days would you like to train?</p>
-              <p className="mt-1 text-sm text-zinc-400">Select at least 1 day. Apex will automatically make every other day a rest/recovery day.</p>
+              <p className="mt-1 text-sm text-slate-500">Select at least 1 day. Apex will automatically make every other day a rest/recovery day.</p>
               <div className="mt-4 grid gap-2 sm:grid-cols-2">
                 {weekDays.map((day) => {
                   const checked = selectedDays.includes(day);
@@ -146,9 +153,9 @@ export function OnboardingForm({ action }: { action: (formData: FormData) => Pro
                       key={day}
                       type="button"
                       onClick={() => toggleDay(day)}
-                      className={`flex items-center gap-3 rounded-md border px-4 py-3 text-left text-sm font-bold transition ${checked ? "border-blood bg-blood/15 text-white" : "border-line bg-panel text-zinc-300 hover:border-blood"}`}
+                      className={`flex items-center gap-3 rounded-md border px-4 py-3 text-left text-sm font-bold transition ${checked ? "border-emerald-300 bg-emerald-100 text-slate-950" : "border-line bg-panel text-slate-600 hover:border-emerald-300"}`}
                     >
-                      <span className={`grid h-5 w-5 place-items-center rounded border ${checked ? "border-blood bg-blood" : "border-zinc-600"}`}>
+                      <span className={`grid h-5 w-5 place-items-center rounded border ${checked ? "border-emerald-300 bg-blood" : "border-zinc-600"}`}>
                         {checked ? "✓" : ""}
                       </span>
                       {day}
@@ -156,24 +163,24 @@ export function OnboardingForm({ action }: { action: (formData: FormData) => Pro
                   );
                 })}
               </div>
-              <p className="mt-3 text-xs font-bold text-zinc-500">{selectedDays.length} selected · {7 - selectedDays.length} recovery days</p>
+              <p className="mt-3 text-xs font-bold text-slate-500">{selectedDays.length} selected · {7 - selectedDays.length} recovery days</p>
             </div>
           ) : null}
 
           {step === 2 ? (
             <div className="grid gap-4">
               {values.routineType === "Use Apex recommendation" ? (
-                <div className="rounded-lg border border-line bg-black p-4">
+                <div className="rounded-lg border border-line bg-slate-50 p-4">
                   <p className="font-black">Apex will keep exercises matched to the day type.</p>
-                  <p className="mt-1 text-sm text-zinc-400">Push days only use push exercises. Pull days only use pull exercises. Rest days never include strength workouts.</p>
+                  <p className="mt-1 text-sm text-slate-500">Push days only use push exercises. Pull days only use pull exercises. Rest days never include strength workouts.</p>
                 </div>
               ) : (
-                <div className="rounded-lg border border-line bg-black p-4">
+                <div className="rounded-lg border border-line bg-slate-50 p-4">
                   <p className="font-black">Pick the focus for each selected day</p>
-                  <p className="mt-1 text-sm text-zinc-400">Apex will filter exercises from the matching category.</p>
+                  <p className="mt-1 text-sm text-slate-500">Apex will filter exercises from the matching category.</p>
                   <div className="mt-4 grid gap-3">
                     {selectedDays.map((day) => (
-                      <label key={day} className="grid gap-2 text-sm font-bold text-zinc-300 sm:grid-cols-[140px_1fr] sm:items-center">
+                      <label key={day} className="grid gap-2 text-sm font-bold text-slate-600 sm:grid-cols-[140px_1fr] sm:items-center">
                         {day}
                         <select value={values[`focus_${day}`]} onChange={(event) => setValue(`focus_${day}`, event.target.value)}>
                           {focusOptions.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
@@ -188,16 +195,38 @@ export function OnboardingForm({ action }: { action: (formData: FormData) => Pro
 
           {step === 5 ? (
             <div className="grid gap-4 sm:grid-cols-2">
-              <label className="space-y-2 text-sm font-bold text-zinc-300">Current weight<input value={values.currentWeight} onChange={(event) => setValue("currentWeight", event.target.value)} type="number" step="0.1" placeholder="Enter your current weight, e.g. 82kg" required /></label>
-              <label className="space-y-2 text-sm font-bold text-zinc-300">Target weight<input value={values.targetWeight} onChange={(event) => setValue("targetWeight", event.target.value)} type="number" step="0.1" placeholder="Enter your target weight, e.g. 78kg" required /></label>
-              <label className="space-y-2 text-sm font-bold text-zinc-300">Height<input value={values.height} onChange={(event) => setValue("height", event.target.value)} type="number" step="0.1" placeholder="Enter your height, e.g. 178cm" required /></label>
-              <label className="space-y-2 text-sm font-bold text-zinc-300">Age<input value={values.age} onChange={(event) => setValue("age", event.target.value)} type="number" placeholder="Enter your age, e.g. 32" required /></label>
+              <label className="space-y-2 text-sm font-bold text-slate-600">Current weight<input value={values.currentWeight} onChange={(event) => setValue("currentWeight", event.target.value)} type="number" step="0.1" placeholder="Enter your current weight, e.g. 82kg" required /></label>
+              <label className="space-y-2 text-sm font-bold text-slate-600">Target weight<input value={values.targetWeight} onChange={(event) => setValue("targetWeight", event.target.value)} type="number" step="0.1" placeholder="Enter your target weight, e.g. 78kg" required /></label>
+              <label className="space-y-2 text-sm font-bold text-slate-600">Height<input value={values.height} onChange={(event) => setValue("height", event.target.value)} type="number" step="0.1" placeholder="Enter your height, e.g. 178cm" required /></label>
+              <label className="space-y-2 text-sm font-bold text-slate-600">Age<input value={values.age} onChange={(event) => setValue("age", event.target.value)} type="number" placeholder="Enter your age, e.g. 32" required /></label>
+            </div>
+          ) : null}
+
+          {step === 6 ? (
+            <div className="grid gap-3">
+              {weekDays.map((day) => {
+                const trainingIndex = selectedDays.indexOf(day);
+                const isTraining = trainingIndex >= 0;
+                const customFocus = splitLabel(values[`focus_${day}`] || "full_body");
+                const focus = values.routineType === "Build my own routine" ? customFocus : recommendedFocus[trainingIndex] ?? "Full Body";
+                return (
+                  <div key={day} className={`rounded-lg border p-4 ${isTraining ? "border-emerald-300 bg-emerald-50" : "border-line bg-slate-50"}`}>
+                    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                      <p className="font-black">{day}</p>
+                      <p className="text-sm font-bold text-slate-600">{isTraining ? focus : "Rest / recovery"}</p>
+                    </div>
+                    <p className="mt-2 text-sm text-slate-500">
+                      {isTraining ? "Apex will add category-matched exercises. You can replace or reorder them after saving." : "No strength workout. Mobility, walking and recovery are prioritised."}
+                    </p>
+                  </div>
+                );
+              })}
             </div>
           ) : null}
         </div>
 
         <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
-          <button type="button" onClick={() => setStep((current) => Math.max(0, current - 1))} className="inline-flex items-center justify-center gap-2 rounded-md border border-line px-4 py-2.5 text-sm font-bold text-zinc-200 hover:border-blood disabled:opacity-40" disabled={step === 0}>
+          <button type="button" onClick={() => setStep((current) => Math.max(0, current - 1))} className="inline-flex items-center justify-center gap-2 rounded-md border border-line px-4 py-2.5 text-sm font-bold text-slate-700 hover:border-emerald-300 disabled:opacity-40" disabled={step === 0}>
             <ArrowLeft className="h-4 w-4" />Back
           </button>
           {step < steps.length - 1 ? (

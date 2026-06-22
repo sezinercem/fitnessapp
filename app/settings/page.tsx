@@ -9,15 +9,15 @@ export default async function SettingsPage() {
 
   return (
     <AppShell>
-      <p className="text-sm font-bold uppercase tracking-[0.2em] text-ember">Settings</p>
+      <p className="text-sm font-bold uppercase tracking-[0.2em] text-emerald-600">Settings</p>
       <h1 className="mt-2 text-3xl font-black sm:text-4xl">Profile</h1>
       <div className="mt-6 grid gap-4 lg:grid-cols-[0.8fr_1.2fr]">
         <Card>
           <h2 className="text-2xl font-black">Logged-in user</h2>
-          <p className="mt-3 text-sm text-zinc-400">Email</p>
+          <p className="mt-3 text-sm text-slate-500">Email</p>
           <p className="font-bold">{user.email}</p>
-          <p className="mt-4 text-sm text-zinc-400">User ID</p>
-          <p className="break-all text-xs text-zinc-500">{user.id}</p>
+          <p className="mt-4 text-sm text-slate-500">User ID</p>
+          <p className="break-all text-xs text-slate-500">{user.id}</p>
         </Card>
         <Card>
           <h2 className="text-2xl font-black">Training preferences</h2>

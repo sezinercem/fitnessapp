@@ -9,15 +9,15 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ink: "#050505",
-        panel: "#101010",
-        panel2: "#171717",
-        line: "#2a2a2a",
-        blood: "#e11d2f",
-        ember: "#ff3448"
+        ink: "#f3f4f6",
+        panel: "#ffffff",
+        panel2: "#eef2f3",
+        line: "#d7dde0",
+        blood: "#34d399",
+        ember: "#00f58a"
       },
       boxShadow: {
-        glow: "0 0 40px rgba(225, 29, 47, 0.18)"
+        glow: "0 20px 60px rgba(15, 23, 42, 0.08)"
       },
       fontFamily: {
         sans: ["var(--font-montserrat)", "Montserrat", "system-ui", "sans-serif"]

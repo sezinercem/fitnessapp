@@ -1,4 +1,5 @@
-import { Plus, Save, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { BookOpen, Dumbbell, History, Plus, Save, Trash2, WandSparkles } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { Button, Card, EmptyState } from "@/components/ui";
 import { ConfirmButton } from "@/components/confirm-button";
@@ -21,22 +22,37 @@ export default async function PlanPage() {
     <AppShell>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-sm font-bold uppercase tracking-[0.2em] text-ember">Current plan</p>
-          <h1 className="mt-2 text-3xl font-black sm:text-4xl">Training plan</h1>
-          <p className="mt-2 max-w-2xl text-zinc-400">Understand what each day is for, then edit the plan as your strength, time, or equipment changes.</p>
+          <p className="text-sm font-bold uppercase tracking-[0.2em] text-emerald-700">Training</p>
+          <h1 className="mt-2 text-3xl font-black sm:text-4xl">Your programme workspace</h1>
+          <p className="mt-2 max-w-2xl text-slate-500">View, edit and rebuild your training without lock-in. Generated workouts are always yours to change.</p>
         </div>
+      </div>
+
+      <div className="mt-6 grid gap-3 md:grid-cols-4">
+        <Link href="/training/builder" className="rounded-lg border border-line bg-white p-4 font-bold hover:border-emerald-300">
+          <WandSparkles className="mb-3 h-5 w-5 text-emerald-600" />Workout builder
+        </Link>
+        <Link href="/library" className="rounded-lg border border-line bg-white p-4 font-bold hover:border-emerald-300">
+          <BookOpen className="mb-3 h-5 w-5 text-emerald-600" />Exercise library
+        </Link>
+        <Link href="/progress" className="rounded-lg border border-line bg-white p-4 font-bold hover:border-emerald-300">
+          <History className="mb-3 h-5 w-5 text-emerald-600" />Workout history
+        </Link>
+        <Link href="/recommendations" className="rounded-lg border border-line bg-white p-4 font-bold hover:border-emerald-300">
+          <Dumbbell className="mb-3 h-5 w-5 text-emerald-600" />Recommendations
+        </Link>
       </div>
 
       {guidedPlan ? (
         <div className="mt-6 grid gap-4">
-          <Card className="border-blood/30">
-            <p className="text-sm font-bold uppercase tracking-[0.2em] text-ember">What this plan gives you</p>
+          <Card className="border-emerald-300">
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-emerald-700">Current programme</p>
             <h2 className="mt-2 text-3xl font-black">{guidedPlan.plan_name}</h2>
             <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-              <div className="rounded-lg border border-line bg-black p-4"><p className="text-xs uppercase tracking-[0.16em] text-zinc-500">Goal</p><p className="mt-2 font-black">{guidedPlan.goal}</p></div>
-              <div className="rounded-lg border border-line bg-black p-4"><p className="text-xs uppercase tracking-[0.16em] text-zinc-500">Weekly structure</p><p className="mt-2 font-black">{guidedPlan.weekly_structure}</p></div>
-              <div className="rounded-lg border border-line bg-black p-4"><p className="text-xs uppercase tracking-[0.16em] text-zinc-500">Difficulty</p><p className="mt-2 font-black">{guidedPlan.difficulty_level}</p></div>
-              <div className="rounded-lg border border-line bg-black p-4"><p className="text-xs uppercase tracking-[0.16em] text-zinc-500">Expected outcome</p><p className="mt-2 text-sm text-zinc-300">{guidedPlan.expected_outcome}</p></div>
+              <div className="rounded-lg border border-line bg-slate-50 p-4"><p className="text-xs uppercase tracking-[0.16em] text-slate-500">Goal</p><p className="mt-2 font-black">{guidedPlan.goal}</p></div>
+              <div className="rounded-lg border border-line bg-slate-50 p-4"><p className="text-xs uppercase tracking-[0.16em] text-slate-500">Weekly structure</p><p className="mt-2 font-black">{guidedPlan.weekly_structure}</p></div>
+              <div className="rounded-lg border border-line bg-slate-50 p-4"><p className="text-xs uppercase tracking-[0.16em] text-slate-500">Difficulty</p><p className="mt-2 font-black">{guidedPlan.difficulty_level}</p></div>
+              <div className="rounded-lg border border-line bg-slate-50 p-4"><p className="text-xs uppercase tracking-[0.16em] text-slate-500">Expected outcome</p><p className="mt-2 text-sm text-slate-600">{guidedPlan.expected_outcome}</p></div>
             </div>
             <form action={regenerateWeeklyPlanAction} className="mt-5">
               <Button><Save className="h-4 w-4" />Regenerate from onboarding days</Button>
@@ -47,7 +63,7 @@ export default async function PlanPage() {
             <Card key={day.id}>
               <div className="grid gap-5 lg:grid-cols-[0.85fr_1.15fr]">
                 <div>
-                  <p className={`text-sm font-bold uppercase tracking-[0.18em] ${day.is_rest_day ? "text-zinc-500" : "text-ember"}`}>{day.day_of_week}</p>
+                  <p className={`text-sm font-bold uppercase tracking-[0.18em] ${day.is_rest_day ? "text-slate-500" : "text-emerald-600"}`}>{day.day_of_week}</p>
                   <form action={updateTrainingDayAction.bind(null, day.id)} className="mt-3 grid gap-3">
                     <select name="dayOfWeek" defaultValue={day.day_of_week}>
                       {weekDays.map((weekDay) => <option key={weekDay}>{weekDay}</option>)}
@@ -73,25 +89,25 @@ export default async function PlanPage() {
                     <textarea name="recoveryNotes" defaultValue={day.recovery_notes ?? ""} placeholder="Recovery notes, e.g. Keep two reps in reserve." />
                     <Button><Save className="h-4 w-4" />Save day / move workout</Button>
                   </form>
-                  <div className="mt-4 rounded-lg border border-line bg-black p-4">
+                  <div className="mt-4 rounded-lg border border-line bg-slate-50 p-4">
                     <p className="font-black">Main muscles trained</p>
-                    <p className="mt-1 text-sm text-zinc-400">{day.main_muscles?.join(", ") || "Add muscles in the notes"}</p>
-                    <p className="mt-3 text-sm text-zinc-400">{day.is_rest_day ? "Rest day" : "Workout day"} · {day.estimated_duration} minutes</p>
+                    <p className="mt-1 text-sm text-slate-500">{day.main_muscles?.join(", ") || "Add muscles in the notes"}</p>
+                    <p className="mt-3 text-sm text-slate-500">{day.is_rest_day ? "Rest day" : "Workout day"} · {day.estimated_duration} minutes</p>
                   </div>
                 </div>
                 <div>
                   <h3 className="text-xl font-black">Exercises</h3>
                   <div className="mt-3 grid gap-3">
                     {(day.planned_exercises ?? []).sort((a, b) => a.sort_order - b.sort_order).map((exercise) => (
-                      <div key={exercise.id} className="rounded-lg border border-line bg-black p-4">
+                      <div key={exercise.id} className="rounded-lg border border-line bg-slate-50 p-4">
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                           <div>
                             <p className="font-black">{exercise.exercise_name}</p>
-                            <p className="mt-1 text-sm text-zinc-400">{exercise.sets} sets · {exercise.reps} reps · rest {exercise.rest_seconds}s · {exercise.target_weight}</p>
-                            <p className="mt-1 text-sm text-zinc-500">{exercise.notes}</p>
+                            <p className="mt-1 text-sm text-slate-500">{exercise.sets} sets · {exercise.reps} reps · rest {exercise.rest_seconds}s · {exercise.target_weight}</p>
+                            <p className="mt-1 text-sm text-slate-500">{exercise.notes}</p>
                           </div>
                           <form action={deletePlannedExerciseAction.bind(null, exercise.id)}>
-                            <button className="inline-flex items-center gap-2 rounded-md border border-line px-3 py-2 text-sm font-bold hover:border-blood"><Trash2 className="h-4 w-4" />Remove</button>
+                            <button className="inline-flex items-center gap-2 rounded-md border border-line px-3 py-2 text-sm font-bold hover:border-emerald-300"><Trash2 className="h-4 w-4" />Remove</button>
                           </form>
                         </div>
                       </div>
@@ -111,10 +127,10 @@ export default async function PlanPage() {
             <h2 className="text-2xl font-black">Choose a template</h2>
             <div className="mt-4 grid gap-3 md:grid-cols-2">
               {planTemplates.map((template) => (
-                <form key={template.name} action={createPlanFromTemplateAction} className="rounded-lg border border-line bg-black p-4">
+                <form key={template.name} action={createPlanFromTemplateAction} className="rounded-lg border border-line bg-slate-50 p-4">
                   <input type="hidden" name="templateName" value={template.name} />
                   <p className="font-black">{template.name}</p>
-                  <p className="mt-1 text-sm text-zinc-400">{template.goal} · {template.experience} · {template.equipment}</p>
+                  <p className="mt-1 text-sm text-slate-500">{template.goal} · {template.experience} · {template.equipment}</p>
                   <Button className="mt-4 w-full"><Plus className="h-4 w-4" />Use plan</Button>
                 </form>
               ))}
@@ -159,9 +175,9 @@ export default async function PlanPage() {
                   <div>
                     <form action={updateDayAction.bind(null, day.id)} className="flex gap-2">
                       <input name="dayName" defaultValue={day.day_name} className="max-w-xs text-xl font-black" />
-                      <button className="rounded-md border border-line px-3 text-sm font-bold hover:border-blood">Save</button>
+                      <button className="rounded-md border border-line px-3 text-sm font-bold hover:border-emerald-300">Save</button>
                     </form>
-                    <p className="text-sm text-zinc-400">{day.workout_exercises?.length ?? 0} exercises</p>
+                    <p className="text-sm text-slate-500">{day.workout_exercises?.length ?? 0} exercises</p>
                   </div>
                   <form action={completeWorkoutAction.bind(null, plan.id, day.id)}>
                     <Button>Mark complete</Button>
@@ -169,7 +185,7 @@ export default async function PlanPage() {
                 </div>
                 <div className="mt-4 grid gap-3">
                   {(day.workout_exercises ?? []).sort((a, b) => a.sort_order - b.sort_order).map((exercise) => (
-                    <div key={exercise.id} className="rounded-lg border border-line bg-black p-4">
+                    <div key={exercise.id} className="rounded-lg border border-line bg-slate-50 p-4">
                       <form action={updateExerciseAction.bind(null, exercise.id)} className="grid gap-3 md:grid-cols-6">
                         <input name="exerciseName" defaultValue={exercise.exercise_name} className="md:col-span-2" />
                         <input name="sets" type="number" min="1" defaultValue={exercise.sets} />
@@ -182,14 +198,14 @@ export default async function PlanPage() {
                         </div>
                       </form>
                       <form action={deleteExerciseAction.bind(null, exercise.id)} className="mt-2">
-                        <button className="inline-flex items-center gap-2 rounded-md border border-line px-3 py-2 text-sm font-bold text-zinc-300 hover:border-blood">
+                        <button className="inline-flex items-center gap-2 rounded-md border border-line px-3 py-2 text-sm font-bold text-slate-600 hover:border-emerald-300">
                           <Trash2 className="h-4 w-4" />Remove
                         </button>
                       </form>
                     </div>
                   ))}
                 </div>
-                <form action={addExerciseAction} className="mt-4 grid gap-3 rounded-lg border border-line bg-black p-4 md:grid-cols-2">
+                <form action={addExerciseAction} className="mt-4 grid gap-3 rounded-lg border border-line bg-slate-50 p-4 md:grid-cols-2">
                   <input type="hidden" name="dayId" value={day.id} />
                   <input name="exerciseName" placeholder="Exercise name" required />
                   <input name="sets" type="number" min="1" defaultValue="3" />

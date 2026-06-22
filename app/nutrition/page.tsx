@@ -13,9 +13,9 @@ export default async function NutritionPage() {
 
   return (
     <AppShell>
-      <p className="text-sm font-bold uppercase tracking-[0.2em] text-ember">Nutrition</p>
+      <p className="text-sm font-bold uppercase tracking-[0.2em] text-emerald-600">Nutrition</p>
       <h1 className="mt-2 text-3xl font-black sm:text-4xl">Simple daily targets</h1>
-      <p className="mt-3 max-w-2xl text-zinc-400">Use this page as a plain-English nutrition plan: what to aim for, why it fits your goal, and what meals make those numbers easier.</p>
+      <p className="mt-3 max-w-2xl text-slate-500">Use this page as a plain-English nutrition plan: what to aim for, why it fits your goal, and what meals make those numbers easier.</p>
 
       {target ? (
         <>
@@ -28,10 +28,10 @@ export default async function NutritionPage() {
             <StatCard label="Fat" value={`${target.fat_target}g`} icon="salad" />
           </div>
 
-          <Card className="mt-6 border-blood/30">
+          <Card className="mt-6 border-emerald-300">
             <h2 className="text-2xl font-black">Why this fits your goal</h2>
-            <p className="mt-3 text-zinc-400">{target.explanation}</p>
-            <p className="mt-3 text-sm font-bold text-zinc-300">Water target: {target.water_target_liters}L per day</p>
+            <p className="mt-3 text-slate-500">{target.explanation}</p>
+            <p className="mt-3 text-sm font-bold text-slate-600">Water target: {target.water_target_liters}L per day</p>
           </Card>
 
           <div className="mt-6 grid gap-4">
@@ -39,13 +39,13 @@ export default async function NutritionPage() {
               <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                   <h2 className="text-2xl font-black">Meal structure</h2>
-                  <p className="mt-1 text-sm text-zinc-400">Edit meal names, time of day, foods, macros, and the purpose of each meal.</p>
+                  <p className="mt-1 text-sm text-slate-500">Edit meal names, time of day, foods, macros, and the purpose of each meal.</p>
                 </div>
               </div>
 
               <div className="mt-5 grid gap-4">
                 {meals.map((meal) => (
-                  <div key={meal.id} className="rounded-lg border border-line bg-black p-4">
+                  <div key={meal.id} className="rounded-lg border border-line bg-slate-50 p-4">
                     <form action={updateEasyMealAction.bind(null, meal.id)} className="grid gap-3 md:grid-cols-6">
                       <input name="mealName" defaultValue={meal.meal_name} placeholder="Meal name, e.g. Chicken rice bowl" className="md:col-span-2" />
                       <input name="timeOfDay" defaultValue={meal.time_of_day} placeholder="Time of day, e.g. Lunch" />
@@ -61,13 +61,13 @@ export default async function NutritionPage() {
                       </div>
                     </form>
                     <form action={deleteEasyMealAction.bind(null, meal.id)} className="mt-3">
-                      <button className="inline-flex items-center gap-2 rounded-md border border-line px-3 py-2 text-sm font-bold hover:border-blood"><Trash2 className="h-4 w-4" />Remove meal</button>
+                      <button className="inline-flex items-center gap-2 rounded-md border border-line px-3 py-2 text-sm font-bold hover:border-emerald-300"><Trash2 className="h-4 w-4" />Remove meal</button>
                     </form>
                   </div>
                 ))}
               </div>
 
-              <form action={addEasyMealAction} className="mt-5 grid gap-3 rounded-lg border border-line bg-black p-4 md:grid-cols-6">
+              <form action={addEasyMealAction} className="mt-5 grid gap-3 rounded-lg border border-line bg-slate-50 p-4 md:grid-cols-6">
                 <input type="hidden" name="nutritionTargetId" value={target.id} />
                 <input name="mealName" placeholder="Meal name, e.g. Chicken rice bowl" className="md:col-span-2" required />
                 <input name="timeOfDay" placeholder="Time of day, e.g. Lunch" required />

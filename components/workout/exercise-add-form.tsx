@@ -12,9 +12,9 @@ export function ExerciseAddForm({ trainingDayId, category }: { trainingDayId: st
   const mismatch = exerciseName.length > 1 && !isExerciseCompatible(exerciseName, category);
 
   return (
-    <form action={addPlannedExerciseAction} className="mt-4 grid gap-3 rounded-lg border border-line bg-black p-4 md:grid-cols-2">
+    <form action={addPlannedExerciseAction} className="mt-4 grid gap-3 rounded-lg border border-line bg-slate-50 p-4 md:grid-cols-2">
       <input type="hidden" name="trainingDayId" value={trainingDayId} />
-      <label className="space-y-2 text-sm font-bold text-zinc-300">
+      <label className="space-y-2 text-sm font-bold text-slate-600">
         Exercise
         <input
           name="exerciseName"

@@ -39,7 +39,7 @@ function ProgressBar({ label, value, target, unit = "g" }: { label: string; valu
     <div>
       <div className="flex items-center justify-between gap-3 text-sm">
         <span className="font-bold">{label}</span>
-        <span className="text-zinc-400">{Math.round(value)}{unit} / {target}{unit}</span>
+        <span className="text-slate-500">{Math.round(value)}{unit} / {target}{unit}</span>
       </div>
       <div className="mt-2 h-2 overflow-hidden rounded-full bg-zinc-800">
         <div className="h-full rounded-full bg-blood" style={{ width: `${percent}%` }} />
@@ -61,9 +61,9 @@ function FoodSearchForm({ mealType, foods }: { mealType: MealType; foods: Array<
   }, [foods, query]);
 
   return (
-    <div className="rounded-lg border border-line bg-black p-4">
+    <div className="rounded-lg border border-line bg-slate-50 p-4">
       <div className="flex items-center gap-2">
-        <Search className="h-4 w-4 text-ember" />
+        <Search className="h-4 w-4 text-emerald-600" />
         <p className="font-black">Add food</p>
       </div>
       <div className="mt-3 grid gap-3">
@@ -75,15 +75,15 @@ function FoodSearchForm({ mealType, foods }: { mealType: MealType; foods: Array<
                 key={`${food.library}-${food.id}`}
                 type="button"
                 onClick={() => { setSelected(food); setManual(false); setQuery(food.brand ? `${food.brand} ${food.food_name}` : food.food_name); }}
-                className={`rounded-md border px-3 py-2 text-left text-sm hover:border-blood ${selected?.id === food.id ? "border-blood bg-blood/10" : "border-line bg-panel"}`}
+                className={`rounded-md border px-3 py-2 text-left text-sm hover:border-emerald-300 ${selected?.id === food.id ? "border-emerald-300 bg-emerald-100" : "border-line bg-panel"}`}
               >
                 <span className="block font-bold">{food.brand ? `${food.brand} ${food.food_name}` : food.food_name}</span>
-                <span className="text-xs text-zinc-400">{food.calories} kcal · P {food.protein}g · C {food.carbs}g · F {food.fat}g per {food.serving_size} {food.serving_unit}</span>
+                <span className="text-xs text-slate-500">{food.calories} kcal · P {food.protein}g · C {food.carbs}g · F {food.fat}g per {food.serving_size} {food.serving_unit}</span>
               </button>
             ))}
           </div>
         ) : null}
-        <button type="button" onClick={() => { setManual((value) => !value); setSelected(null); }} className="w-fit rounded-md border border-line px-3 py-2 text-sm font-bold hover:border-blood">
+        <button type="button" onClick={() => { setManual((value) => !value); setSelected(null); }} className="w-fit rounded-md border border-line px-3 py-2 text-sm font-bold hover:border-emerald-300">
           Can’t find it? Add it manually.
         </button>
       </div>
@@ -95,8 +95,8 @@ function FoodSearchForm({ mealType, foods }: { mealType: MealType; foods: Array<
         <input name="quantity" type="number" step="0.01" placeholder="Quantity, e.g. 2" defaultValue="1" required />
         <input name="servingUnit" placeholder="servings, slices, grams, pieces" defaultValue={selected?.serving_unit ?? ""} />
         {!manual && selected ? (
-          <div className="rounded-md border border-line bg-panel px-3 py-2 text-sm text-zinc-300 md:col-span-4">
-            Selected: <span className="font-bold text-white">{selected.food_name}</span> · {selected.calories} calories per serving
+          <div className="rounded-md border border-line bg-panel px-3 py-2 text-sm text-slate-600 md:col-span-4">
+            Selected: <span className="font-bold text-slate-950">{selected.food_name}</span> · {selected.calories} calories per serving
           </div>
         ) : null}
         {manual ? (
@@ -135,19 +135,19 @@ export function FoodLogger({ target, globalFoods, userFoods, mealLogs, suggestio
 
   return (
     <div className="mt-6 grid gap-4">
-      <Card className="border-blood/30">
+      <Card className="border-emerald-300">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h2 className="text-2xl font-black">Nutrition Today</h2>
-            <p className="mt-1 text-sm text-zinc-400">Log real foods as you eat them and compare daily totals against your Apex target.</p>
+            <p className="mt-1 text-sm text-slate-500">Log real foods as you eat them and compare daily totals against your Apex target.</p>
           </div>
-          <p className="rounded-md border border-line bg-black px-3 py-2 text-sm font-bold">{Math.round(caloriesRemaining)} calories remaining</p>
+          <p className="rounded-md border border-line bg-slate-50 px-3 py-2 text-sm font-bold">{Math.round(caloriesRemaining)} calories remaining</p>
         </div>
         <div className="mt-5 grid gap-4 lg:grid-cols-[280px_1fr]">
-          <div className="rounded-lg border border-line bg-black p-4">
-            <p className="text-sm font-bold uppercase tracking-[0.18em] text-ember">Daily totals</p>
+          <div className="rounded-lg border border-line bg-slate-50 p-4">
+            <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-600">Daily totals</p>
             <p className="mt-3 text-3xl font-black">{Math.round(dayTotals.calories)} kcal</p>
-            <p className="mt-1 text-sm text-zinc-400">Target: {target?.daily_calories ?? 0} calories</p>
+            <p className="mt-1 text-sm text-slate-500">Target: {target?.daily_calories ?? 0} calories</p>
           </div>
           <div className="grid gap-4">
             <ProgressBar label="Calories" value={dayTotals.calories} target={target?.daily_calories ?? 0} unit="" />
@@ -158,7 +158,7 @@ export function FoodLogger({ target, globalFoods, userFoods, mealLogs, suggestio
         </div>
         <div className="mt-5 grid gap-2">
           {suggestions.map((suggestion) => (
-            <p key={suggestion} className="rounded-md border border-blood/30 bg-blood/10 px-3 py-2 text-sm font-bold text-red-100">{suggestion}</p>
+            <p key={suggestion} className="rounded-md border border-emerald-300 bg-emerald-100 px-3 py-2 text-sm font-bold text-emerald-800">{suggestion}</p>
           ))}
         </div>
       </Card>
@@ -172,20 +172,20 @@ export function FoodLogger({ target, globalFoods, userFoods, mealLogs, suggestio
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h3 className="text-xl font-black">{section.label}</h3>
-                <p className="mt-1 text-sm text-zinc-400">Meal total: {Math.round(mealTotal)} calories</p>
+                <p className="mt-1 text-sm text-slate-500">Meal total: {Math.round(mealTotal)} calories</p>
               </div>
             </div>
 
             <div className="mt-4 grid gap-3">
               {items.length ? items.map((item) => (
-                <div key={item.id} className="rounded-lg border border-line bg-black p-4">
+                <div key={item.id} className="rounded-lg border border-line bg-slate-50 p-4">
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                       <p className="font-black">{item.brand ? `${item.brand} ${item.food_name}` : item.food_name}</p>
-                      <p className="mt-1 text-sm text-zinc-400">{Math.round(Number(item.total_calories))} calories · P {Math.round(Number(item.total_protein))}g · C {Math.round(Number(item.total_carbs))}g · F {Math.round(Number(item.total_fat))}g</p>
+                      <p className="mt-1 text-sm text-slate-500">{Math.round(Number(item.total_calories))} calories · P {Math.round(Number(item.total_protein))}g · C {Math.round(Number(item.total_carbs))}g · F {Math.round(Number(item.total_fat))}g</p>
                     </div>
                     <form action={deleteMealLogItemAction.bind(null, item.id)}>
-                      <button className="inline-flex items-center gap-2 rounded-md border border-line px-3 py-2 text-sm font-bold hover:border-blood">
+                      <button className="inline-flex items-center gap-2 rounded-md border border-line px-3 py-2 text-sm font-bold hover:border-emerald-300">
                         <Trash2 className="h-4 w-4" />Delete
                       </button>
                     </form>
@@ -202,7 +202,7 @@ export function FoodLogger({ target, globalFoods, userFoods, mealLogs, suggestio
                   </form>
                 </div>
               )) : (
-                <p className="rounded-lg border border-dashed border-line bg-black p-4 text-sm text-zinc-400">No foods logged for {section.label.toLowerCase()} yet.</p>
+                <p className="rounded-lg border border-dashed border-line bg-slate-50 p-4 text-sm text-slate-500">No foods logged for {section.label.toLowerCase()} yet.</p>
               )}
             </div>
 

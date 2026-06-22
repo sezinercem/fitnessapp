@@ -1,4 +1,4 @@
-import { Activity, Scale } from "lucide-react";
+import { Activity, Camera, LineChart, Scale } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { Button, Card, EmptyState, ProgressRing, StatCard } from "@/components/ui";
 import { addBodyWeightAction, addMeasurementAction } from "@/lib/actions";
@@ -25,9 +25,9 @@ export default async function ProgressPage() {
 
   return (
     <AppShell>
-      <p className="text-sm font-bold uppercase tracking-[0.2em] text-ember">Progress</p>
+      <p className="text-sm font-bold uppercase tracking-[0.2em] text-emerald-600">Progress</p>
       <h1 className="mt-2 text-3xl font-black sm:text-4xl">Proof that training is working</h1>
-      <p className="mt-3 max-w-2xl text-zinc-400">Track workouts, volume, strength, consistency, body weight, and measurements in one simple place.</p>
+      <p className="mt-3 max-w-2xl text-slate-500">Track workouts, volume, strength, consistency, body weight, and measurements in one simple place.</p>
 
       <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Workouts this week" value={`${completedThisWeek}`} icon="trophy" />
@@ -39,20 +39,20 @@ export default async function ProgressPage() {
       <div className="mt-6 grid gap-4 lg:grid-cols-[320px_1fr]">
         <Card>
           <ProgressRing value={consistency} label="Weekly consistency" />
-          <p className="mt-4 text-sm text-zinc-400">A simple score based on completed workouts versus planned workout days this week.</p>
+          <p className="mt-4 text-sm text-slate-500">A simple score based on completed workouts versus planned workout days this week.</p>
         </Card>
         <Card>
           <h2 className="text-2xl font-black">Workout history</h2>
           <div className="mt-4 grid gap-2">
             {sessions.length ? sessions.slice(0, 8).map((session) => (
-              <div key={session.id} className="rounded-lg border border-line bg-black p-4">
-                <p className="font-black"><Activity className="mr-2 inline h-4 w-4 text-ember" />{session.workout_name}</p>
-                <p className="mt-1 text-sm text-zinc-400">{new Date(session.started_at).toLocaleString()} · {session.status}</p>
+              <div key={session.id} className="rounded-lg border border-line bg-slate-50 p-4">
+                <p className="font-black"><Activity className="mr-2 inline h-4 w-4 text-emerald-600" />{session.workout_name}</p>
+                <p className="mt-1 text-sm text-slate-500">{new Date(session.started_at).toLocaleString()} · {session.status}</p>
               </div>
             )) : logs.length ? logs.slice(0, 8).map((log) => (
-              <div key={log.id} className="rounded-lg border border-line bg-black p-4">
-                <p className="font-black"><Activity className="mr-2 inline h-4 w-4 text-ember" />Workout tracked</p>
-                <p className="mt-1 text-sm text-zinc-400">{new Date(log.completed_at).toLocaleString()} · {log.notes}</p>
+              <div key={log.id} className="rounded-lg border border-line bg-slate-50 p-4">
+                <p className="font-black"><Activity className="mr-2 inline h-4 w-4 text-emerald-600" />Workout tracked</p>
+                <p className="mt-1 text-sm text-slate-500">{new Date(log.completed_at).toLocaleString()} · {log.notes}</p>
               </div>
             )) : <EmptyState title="No workout history yet" body="Start a workout from the dashboard and save sets to build your history." />}
           </div>
@@ -62,28 +62,67 @@ export default async function ProgressPage() {
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
         <Card>
           <h2 className="text-2xl font-black">Personal records</h2>
-          <p className="mt-1 text-sm text-zinc-400">Highest tracked weight per exercise.</p>
+          <p className="mt-1 text-sm text-slate-500">Highest tracked weight per exercise.</p>
           <div className="mt-4 grid gap-2">
             {prs.length ? prs.map((set) => (
-              <div key={set.id} className="flex items-center justify-between rounded-lg border border-line bg-black p-4">
+              <div key={set.id} className="flex items-center justify-between rounded-lg border border-line bg-slate-50 p-4">
                 <span className="font-bold">{set.exercise_name}</span>
-                <span className="text-ember">{set.weight || "bodyweight"} x {set.reps}</span>
+                <span className="text-emerald-600">{set.weight || "bodyweight"} x {set.reps}</span>
               </div>
-            )) : <p className="text-sm text-zinc-400">PRs appear after you track weighted sets.</p>}
+            )) : <p className="text-sm text-slate-500">PRs appear after you track weighted sets.</p>}
           </div>
         </Card>
 
         <Card>
           <h2 className="text-2xl font-black">Strength progression</h2>
-          <p className="mt-1 text-sm text-zinc-400">Recent set entries by exercise. Add more sets to see clearer trends.</p>
+          <p className="mt-1 text-sm text-slate-500">Recent set entries by exercise. Add more sets to see clearer trends.</p>
           <div className="mt-4 grid gap-2">
             {workoutSets.slice(0, 8).map((set) => (
-              <div key={set.id} className="rounded-lg border border-line bg-black p-4">
+              <div key={set.id} className="rounded-lg border border-line bg-slate-50 p-4">
                 <p className="font-bold">{set.exercise_name}</p>
-                <p className="text-sm text-zinc-400">Set {set.set_number}: {set.weight || "bodyweight"} · {set.reps} reps · RPE {set.rpe}/10</p>
+                <p className="text-sm text-slate-500">Set {set.set_number}: {set.weight || "bodyweight"} · {set.reps} reps · RPE {set.rpe}/10</p>
               </div>
             ))}
-            {!workoutSets.length ? <p className="text-sm text-zinc-400">No set data yet.</p> : null}
+            {!workoutSets.length ? <p className="text-sm text-slate-500">No set data yet.</p> : null}
+          </div>
+        </Card>
+      </div>
+
+      <div className="mt-6 grid gap-4 lg:grid-cols-2">
+        <Card>
+          <h2 className="flex items-center gap-2 text-2xl font-black"><LineChart className="h-5 w-5 text-emerald-600" />Strength graphs</h2>
+          <p className="mt-1 text-sm text-slate-500">A quick visual read of your latest tracked strength work.</p>
+          <div className="mt-5 grid gap-3">
+            {prs.length ? prs.slice(0, 4).map((set) => {
+              const value = Math.min(100, Math.max(12, numberFromWeight(set.weight)));
+              return (
+                <div key={set.id}>
+                  <div className="mb-2 flex items-center justify-between text-sm">
+                    <span className="font-bold">{set.exercise_name}</span>
+                    <span className="text-slate-500">{set.weight || "bodyweight"} x {set.reps}</span>
+                  </div>
+                  <div className="h-3 overflow-hidden rounded-full bg-slate-100">
+                    <div className="h-full rounded-full bg-blood" style={{ width: `${value}%` }} />
+                  </div>
+                </div>
+              );
+            }) : <p className="text-sm text-slate-500">Graphs appear after you track sets in a workout.</p>}
+          </div>
+        </Card>
+
+        <Card>
+          <h2 className="flex items-center gap-2 text-2xl font-black"><Camera className="h-5 w-5 text-emerald-600" />Progress photos</h2>
+          <p className="mt-1 text-sm text-slate-500">Keep photo check-ins consistent: same lighting, same pose, same time of day.</p>
+          <div className="mt-5 grid gap-3 sm:grid-cols-3">
+            {["Front", "Side", "Back"].map((angle) => (
+              <div key={angle} className="grid aspect-[3/4] place-items-center rounded-lg border border-dashed border-line bg-slate-50 text-center">
+                <div>
+                  <Camera className="mx-auto h-6 w-6 text-emerald-600" />
+                  <p className="mt-3 text-sm font-black">{angle}</p>
+                  <p className="mt-1 text-xs text-slate-500">Upload slot</p>
+                </div>
+              </div>
+            ))}
           </div>
         </Card>
       </div>
@@ -98,7 +137,7 @@ export default async function ProgressPage() {
           </form>
           <div className="mt-4 grid gap-2">
             {weights.slice(0, 5).map((entry) => (
-              <p key={entry.id} className="rounded-md bg-black p-3 text-sm text-zinc-300">{entry.weight}kg · {new Date(entry.logged_at).toLocaleDateString()} · {entry.notes}</p>
+              <p key={entry.id} className="rounded-md bg-slate-50 p-3 text-sm text-slate-600">{entry.weight}kg · {new Date(entry.logged_at).toLocaleDateString()} · {entry.notes}</p>
             ))}
           </div>
         </Card>
@@ -115,7 +154,7 @@ export default async function ProgressPage() {
           </form>
           <div className="mt-4 grid gap-2">
             {measurements.slice(0, 5).map((entry) => (
-              <p key={entry.id} className="rounded-md bg-black p-3 text-sm text-zinc-300">Waist {entry.waist ?? "-"}cm · Chest {entry.chest ?? "-"}cm · {new Date(entry.logged_at).toLocaleDateString()}</p>
+              <p key={entry.id} className="rounded-md bg-slate-50 p-3 text-sm text-slate-600">Waist {entry.waist ?? "-"}cm · Chest {entry.chest ?? "-"}cm · {new Date(entry.logged_at).toLocaleDateString()}</p>
             ))}
           </div>
         </Card>

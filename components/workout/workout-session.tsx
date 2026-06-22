@@ -57,35 +57,35 @@ export function WorkoutSessionTracker({ session, exercises, sets, previousSetsBy
     return (
       <Card>
         <p className="text-xl font-black">No exercises loaded</p>
-        <p className="mt-2 text-sm text-zinc-400">Add exercises to this training day, then start a new workout.</p>
+        <p className="mt-2 text-sm text-slate-500">Add exercises to this training day, then start a new workout.</p>
       </Card>
     );
   }
 
   return (
     <div className="grid gap-4">
-      <Card className="border-blood/40">
+      <Card className="border-emerald-300">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-sm font-bold uppercase tracking-[0.2em] text-ember">Workout mode</p>
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-emerald-600">Workout mode</p>
             <h1 className="mt-2 text-2xl font-black sm:text-3xl">{session.workout_name}</h1>
-            <p className="mt-1 text-sm text-zinc-400">{session.day_of_week} · {completed}/{exercises.length} exercises complete · {duration} minutes</p>
+            <p className="mt-1 text-sm text-slate-500">{session.day_of_week} · {completed}/{exercises.length} exercises complete · {duration} minutes</p>
           </div>
-          <span className="rounded-md border border-line bg-black px-3 py-2 text-sm font-bold">Status: {session.status}</span>
+          <span className="rounded-md border border-line bg-slate-50 px-3 py-2 text-sm font-bold">Status: {session.status}</span>
         </div>
       </Card>
 
       <Card>
         <div className="grid grid-cols-[44px_1fr_44px] items-center gap-2 sm:gap-3">
-          <button type="button" className="grid h-11 w-11 place-items-center rounded-md border border-line hover:border-blood" onClick={() => setIndex((value) => Math.max(0, value - 1))} disabled={index === 0} aria-label="Previous exercise">
+          <button type="button" className="grid h-11 w-11 place-items-center rounded-md border border-line hover:border-emerald-300" onClick={() => setIndex((value) => Math.max(0, value - 1))} disabled={index === 0} aria-label="Previous exercise">
             <ChevronLeft className="h-5 w-5" />
           </button>
           <div className="min-w-0 text-center">
-            <p className="text-sm font-bold text-zinc-500">Current exercise {index + 1} of {exercises.length}</p>
+            <p className="text-sm font-bold text-slate-500">Current exercise {index + 1} of {exercises.length}</p>
             <h2 className="mt-1 break-words text-2xl font-black sm:text-3xl">{current.exercise_name}</h2>
-            <p className="mt-1 text-sm text-zinc-400">Planned: {current.planned_sets} sets · {current.planned_reps || "target reps"}</p>
+            <p className="mt-1 text-sm text-slate-500">Planned: {current.planned_sets} sets · {current.planned_reps || "target reps"}</p>
           </div>
-          <button type="button" className="grid h-11 w-11 place-items-center rounded-md border border-line hover:border-blood" onClick={() => setIndex((value) => Math.min(exercises.length - 1, value + 1))} disabled={index === exercises.length - 1} aria-label="Next exercise">
+          <button type="button" className="grid h-11 w-11 place-items-center rounded-md border border-line hover:border-emerald-300" onClick={() => setIndex((value) => Math.min(exercises.length - 1, value + 1))} disabled={index === exercises.length - 1} aria-label="Next exercise">
             <ChevronRight className="h-5 w-5" />
           </button>
         </div>
@@ -94,11 +94,11 @@ export function WorkoutSessionTracker({ session, exercises, sets, previousSetsBy
       <div className="grid gap-4 lg:grid-cols-[0.8fr_1.2fr]">
         <Card>
           <h3 className="text-xl font-black">Previous</h3>
-          <p className="mt-1 text-sm text-zinc-400">Last saved performance for this same exercise.</p>
+          <p className="mt-1 text-sm text-slate-500">Last saved performance for this same exercise.</p>
           <div className="mt-4 grid gap-2">
             {previousSets.length ? previousSets.map((set) => (
-              <p key={set.id} className="rounded-md bg-black p-3 text-sm text-zinc-300">Set {set.set_number}: {set.weight || "0"}{set.weight_unit} x {set.reps ?? 0}</p>
-            )) : <p className="rounded-md bg-black p-3 text-sm text-zinc-400">No previous performance yet.</p>}
+              <p key={set.id} className="rounded-md bg-slate-50 p-3 text-sm text-slate-600">Set {set.set_number}: {set.weight || "0"}{set.weight_unit} x {set.reps ?? 0}</p>
+            )) : <p className="rounded-md bg-slate-50 p-3 text-sm text-slate-500">No previous performance yet.</p>}
           </div>
         </Card>
 
@@ -106,14 +106,14 @@ export function WorkoutSessionTracker({ session, exercises, sets, previousSetsBy
           <h3 className="text-xl font-black">Today’s sets</h3>
           <div className="mt-4 grid gap-2">
             {todaySets.map((set) => (
-              <div key={set.id} className="flex flex-col gap-2 rounded-md bg-black p-3 text-sm text-zinc-300 sm:flex-row sm:items-center sm:justify-between">
+              <div key={set.id} className="flex flex-col gap-2 rounded-md bg-slate-50 p-3 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-between">
                 <span>Set {set.set_number}: {set.weight || "0"}{set.weight_unit} x {set.reps ?? 0} · rest {set.rest_seconds ?? 0}s · RPE {set.rpe ?? "-"}</span>
-                <button type="button" onClick={() => void removeWorkoutSessionSetAction(set.id, session.id)} className="inline-flex items-center gap-2 rounded-md border border-line px-3 py-2 font-bold hover:border-blood">
+                <button type="button" onClick={() => void removeWorkoutSessionSetAction(set.id, session.id)} className="inline-flex items-center gap-2 rounded-md border border-line px-3 py-2 font-bold hover:border-emerald-300">
                   <Trash2 className="h-4 w-4" />Remove set
                 </button>
               </div>
             ))}
-            {!todaySets.length ? <p className="rounded-md bg-black p-3 text-sm text-zinc-400">Add your first set below.</p> : null}
+            {!todaySets.length ? <p className="rounded-md bg-slate-50 p-3 text-sm text-slate-500">Add your first set below.</p> : null}
           </div>
 
           <form action={addWorkoutSessionSetAction} className="mt-4 grid gap-3 md:grid-cols-6">
@@ -139,16 +139,16 @@ export function WorkoutSessionTracker({ session, exercises, sets, previousSetsBy
         <h3 className="text-xl font-black">Progressive overload</h3>
         <div className="mt-3 flex flex-wrap gap-2">
           {comparisons.map((item) => (
-            <span key={item} className="rounded-md border border-blood/40 bg-blood/10 px-3 py-2 text-sm font-bold text-red-100">{item}</span>
+            <span key={item} className="rounded-md border border-emerald-300 bg-emerald-100 px-3 py-2 text-sm font-bold text-emerald-800">{item}</span>
           ))}
         </div>
       </Card>
 
       <div className="grid gap-3 sm:grid-cols-3">
-        <button type="button" onClick={() => void updateSessionExerciseStatusAction(current.id, session.id, "completed")} className="inline-flex items-center justify-center gap-2 rounded-md border border-line px-4 py-3 text-sm font-black hover:border-blood">
+        <button type="button" onClick={() => void updateSessionExerciseStatusAction(current.id, session.id, "completed")} className="inline-flex items-center justify-center gap-2 rounded-md border border-line px-4 py-3 text-sm font-black hover:border-emerald-300">
           <CheckCircle2 className="h-4 w-4" />Mark exercise complete
         </button>
-        <button type="button" onClick={() => void updateSessionExerciseStatusAction(current.id, session.id, "skipped")} className="rounded-md border border-line px-4 py-3 text-sm font-black hover:border-blood">
+        <button type="button" onClick={() => void updateSessionExerciseStatusAction(current.id, session.id, "skipped")} className="rounded-md border border-line px-4 py-3 text-sm font-black hover:border-emerald-300">
           Skip exercise
         </button>
         <button type="button" onClick={() => setIndex((value) => Math.min(exercises.length - 1, value + 1))} className="rounded-md bg-blood px-4 py-3 text-sm font-black hover:bg-ember">
@@ -159,10 +159,10 @@ export function WorkoutSessionTracker({ session, exercises, sets, previousSetsBy
       <Card>
         <h3 className="text-2xl font-black">Workout summary</h3>
         <div className="mt-4 grid gap-3 md:grid-cols-4">
-          <div className="rounded-lg border border-line bg-black p-4"><p className="text-xs uppercase tracking-[0.16em] text-zinc-500">Duration</p><p className="mt-2 font-black">{duration} min</p></div>
-          <div className="rounded-lg border border-line bg-black p-4"><p className="text-xs uppercase tracking-[0.16em] text-zinc-500">Exercises completed</p><p className="mt-2 font-black">{completed}/{exercises.length}</p></div>
-          <div className="rounded-lg border border-line bg-black p-4"><p className="text-xs uppercase tracking-[0.16em] text-zinc-500">Total volume</p><p className="mt-2 font-black">{Math.round(totalVolume)}</p></div>
-          <div className="rounded-lg border border-line bg-black p-4"><p className="text-xs uppercase tracking-[0.16em] text-zinc-500">Set count</p><p className="mt-2 font-black">{sets.length}</p></div>
+          <div className="rounded-lg border border-line bg-slate-50 p-4"><p className="text-xs uppercase tracking-[0.16em] text-slate-500">Duration</p><p className="mt-2 font-black">{duration} min</p></div>
+          <div className="rounded-lg border border-line bg-slate-50 p-4"><p className="text-xs uppercase tracking-[0.16em] text-slate-500">Exercises completed</p><p className="mt-2 font-black">{completed}/{exercises.length}</p></div>
+          <div className="rounded-lg border border-line bg-slate-50 p-4"><p className="text-xs uppercase tracking-[0.16em] text-slate-500">Total volume</p><p className="mt-2 font-black">{Math.round(totalVolume)}</p></div>
+          <div className="rounded-lg border border-line bg-slate-50 p-4"><p className="text-xs uppercase tracking-[0.16em] text-slate-500">Set count</p><p className="mt-2 font-black">{sets.length}</p></div>
         </div>
         <form action={finishWorkoutSessionAction.bind(null, session.id)} className="mt-5 grid gap-3">
           <textarea name="notes" placeholder="Workout notes, e.g. Felt stronger than last week" />
