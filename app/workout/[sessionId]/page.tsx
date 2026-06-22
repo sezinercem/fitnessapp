@@ -22,17 +22,24 @@ export default async function WorkoutSessionPage({ params }: { params: Promise<{
   if (!session) redirect("/dashboard");
 
   const sessionExercises = (exercises ?? []) as WorkoutSessionExercise[];
+  const { data: previousSession } = await supabase
+    .from("workout_sessions")
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("training_day_id", (session as WorkoutSession).training_day_id)
+    .neq("id", sessionId)
+    .eq("status", "completed")
+    .order("started_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
   const exerciseNames = sessionExercises.map((exercise) => exercise.exercise_name);
-  const { data: previousSets } = exerciseNames.length
-    ? await supabase
-        .from("workout_sets")
-        .select("*")
-        .in("exercise_name", exerciseNames)
-        .eq("user_id", user.id)
-        .neq("workout_session_id", sessionId)
-        .order("created_at", { ascending: false })
-        .limit(120)
-    : { data: [] };
+  const previousQuery = previousSession
+    ? supabase.from("workout_sets").select("*").eq("workout_session_id", previousSession.id).eq("user_id", user.id).order("set_number")
+    : exerciseNames.length
+      ? supabase.from("workout_sets").select("*").in("exercise_name", exerciseNames).eq("user_id", user.id).neq("workout_session_id", sessionId).order("created_at", { ascending: false }).limit(120)
+      : null;
+  const { data: previousSets } = previousQuery ? await previousQuery : { data: [] };
 
   const previousSetsByExercise = ((previousSets ?? []) as SessionSet[]).reduce<Record<string, SessionSet[]>>((grouped, set) => {
     const current = grouped[set.exercise_name] ?? [];

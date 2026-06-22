@@ -15,6 +15,7 @@ import {
   nutritionSchema,
   onboardingSchema,
   plannedExerciseSchema,
+  plannedExerciseUpdateSchema,
   planSchema,
   profileSchema,
   sessionSetSchema,
@@ -594,9 +595,12 @@ export async function startWorkoutAction(trainingDayId: string) {
   const plannedExercises = ((day.planned_exercises ?? []) as Array<{
     id: string;
     exercise_name: string;
+    muscle_group?: string | null;
+    muscle_groups?: string[];
     sets: number;
     reps: string;
     notes: string | null;
+    rest_seconds: number;
     sort_order: number;
   }>).sort((a, b) => a.sort_order - b.sort_order);
 
@@ -606,10 +610,12 @@ export async function startWorkoutAction(trainingDayId: string) {
       workout_session_id: session.id,
       planned_exercise_id: exercise.id,
       exercise_name: exercise.exercise_name,
+      muscle_group: exercise.muscle_group ?? exercise.muscle_groups?.join(", ") ?? null,
       exercise_order: index,
       status: "started",
       planned_sets: exercise.sets,
       planned_reps: exercise.reps,
+      rest_seconds: exercise.rest_seconds,
       notes: exercise.notes
     })));
   }
@@ -709,11 +715,20 @@ export async function updateSessionExerciseStatusAction(exerciseId: string, sess
 export async function finishWorkoutSessionAction(sessionId: string, formData: FormData) {
   const { supabase, user } = await currentUser();
   const parsed = finishSessionSchema.parse({ notes: formData.get("notes") });
+  const { data: session } = await supabase
+    .from("workout_sessions")
+    .select("started_at")
+    .eq("id", sessionId)
+    .eq("user_id", user.id)
+    .single();
+  const completedAt = new Date();
+  const durationSeconds = session?.started_at ? Math.max(1, Math.round((completedAt.getTime() - new Date(session.started_at).getTime()) / 1000)) : null;
   await supabase
     .from("workout_sessions")
     .update({
       status: "completed",
-      completed_at: new Date().toISOString(),
+      completed_at: completedAt.toISOString(),
+      duration_seconds: durationSeconds,
       notes: parsed.notes
     })
     .eq("id", sessionId)
@@ -793,6 +808,43 @@ export async function updateTrainingDayAction(dayId: string, formData: FormData)
     recovery_notes: parsed.recoveryNotes
   }).eq("id", dayId).eq("user_id", user.id);
   revalidatePath("/plan");
+  revalidatePath("/training");
+  revalidatePath("/dashboard");
+}
+
+export async function addTrainingDayAction(weeklyPlanId: string, formData: FormData) {
+  const { supabase, user } = await currentUser();
+  const parsed = trainingDaySchema.parse({
+    trainingFocus: formData.get("trainingFocus"),
+    workoutCategory: formData.get("workoutCategory"),
+    dayOfWeek: formData.get("dayOfWeek"),
+    isRestDay: formData.get("isRestDay") === "true",
+    estimatedDuration: formData.get("estimatedDuration"),
+    whyItExists: formData.get("whyItExists"),
+    recoveryNotes: formData.get("recoveryNotes")
+  });
+  const { count } = await supabase
+    .from("weekly_training_plans")
+    .select("*", { count: "exact", head: true })
+    .eq("id", weeklyPlanId)
+    .eq("user_id", user.id);
+  if (!count) throw new Error("Programme not found.");
+  const { error } = await supabase.from("training_days").insert({
+    user_id: user.id,
+    weekly_plan_id: weeklyPlanId,
+    day_of_week: parsed.dayOfWeek,
+    day_index: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].indexOf(parsed.dayOfWeek),
+    training_focus: parsed.trainingFocus,
+    workout_category: parsed.workoutCategory,
+    is_rest_day: parsed.isRestDay,
+    estimated_duration: parsed.estimatedDuration,
+    why_it_exists: parsed.whyItExists,
+    main_muscles: [],
+    recovery_notes: parsed.recoveryNotes
+  });
+  if (error) throw new Error(error.message);
+  revalidatePath("/training");
+  revalidatePath("/plan");
   revalidatePath("/dashboard");
 }
 
@@ -802,6 +854,7 @@ export async function addPlannedExerciseAction(formData: FormData) {
     trainingDayId: formData.get("trainingDayId"),
     exerciseName: formData.get("exerciseName"),
     muscleGroups: formData.get("muscleGroups"),
+    muscleGroup: formData.get("muscleGroup"),
     confirmMismatch: formData.get("confirmMismatch") === "on",
     sets: formData.get("sets"),
     reps: formData.get("reps"),
@@ -824,6 +877,7 @@ export async function addPlannedExerciseAction(formData: FormData) {
     user_id: user.id,
     training_day_id: parsed.trainingDayId,
     exercise_name: parsed.exerciseName,
+    muscle_group: parsed.muscleGroup || parsed.muscleGroups,
     muscle_groups: parsed.muscleGroups.split(",").map((item) => item.trim()).filter(Boolean),
     workout_category: exerciseCategory,
     sets: parsed.sets,
@@ -834,6 +888,67 @@ export async function addPlannedExerciseAction(formData: FormData) {
     sort_order: Date.now()
   });
   revalidatePath("/plan");
+  revalidatePath("/training");
+  revalidatePath("/dashboard");
+}
+
+export async function updatePlannedExerciseAction(exerciseId: string, formData: FormData) {
+  const { supabase, user } = await currentUser();
+  const parsed = plannedExerciseUpdateSchema.parse({
+    exerciseName: formData.get("exerciseName"),
+    muscleGroup: formData.get("muscleGroup"),
+    muscleGroups: formData.get("muscleGroups"),
+    sets: formData.get("sets"),
+    reps: formData.get("reps"),
+    targetWeight: formData.get("targetWeight"),
+    restSeconds: formData.get("restSeconds"),
+    notes: formData.get("notes")
+  });
+  const muscleGroups = (parsed.muscleGroups || parsed.muscleGroup).split(",").map((item) => item.trim()).filter(Boolean);
+  const { error } = await supabase
+    .from("planned_exercises")
+    .update({
+      exercise_name: parsed.exerciseName,
+      muscle_group: parsed.muscleGroup,
+      muscle_groups: muscleGroups,
+      sets: parsed.sets,
+      reps: parsed.reps,
+      target_weight: parsed.targetWeight,
+      rest_seconds: parsed.restSeconds,
+      notes: parsed.notes
+    })
+    .eq("id", exerciseId)
+    .eq("user_id", user.id);
+  if (error) throw new Error(error.message);
+  revalidatePath("/training");
+  revalidatePath("/plan");
+  revalidatePath("/dashboard");
+}
+
+export async function movePlannedExerciseAction(exerciseId: string, direction: "up" | "down") {
+  const { supabase, user } = await currentUser();
+  const { data: exercise } = await supabase
+    .from("planned_exercises")
+    .select("id, training_day_id, sort_order")
+    .eq("id", exerciseId)
+    .eq("user_id", user.id)
+    .single();
+  if (!exercise) return;
+  const operator = direction === "up" ? "lt" : "gt";
+  const { data: swap } = await supabase
+    .from("planned_exercises")
+    .select("id, sort_order")
+    .eq("training_day_id", exercise.training_day_id)
+    .eq("user_id", user.id)
+    .filter("sort_order", operator, exercise.sort_order)
+    .order("sort_order", { ascending: direction === "down" })
+    .limit(1)
+    .maybeSingle();
+  if (!swap) return;
+  await supabase.from("planned_exercises").update({ sort_order: swap.sort_order }).eq("id", exercise.id).eq("user_id", user.id);
+  await supabase.from("planned_exercises").update({ sort_order: exercise.sort_order }).eq("id", swap.id).eq("user_id", user.id);
+  revalidatePath("/training");
+  revalidatePath("/plan");
   revalidatePath("/dashboard");
 }
 
@@ -841,6 +956,7 @@ export async function deletePlannedExerciseAction(exerciseId: string) {
   const { supabase, user } = await currentUser();
   await supabase.from("planned_exercises").delete().eq("id", exerciseId).eq("user_id", user.id);
   revalidatePath("/plan");
+  revalidatePath("/training");
   revalidatePath("/dashboard");
 }
 

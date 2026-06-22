@@ -30,6 +30,7 @@ Run the SQL migrations in order from `supabase/migrations` in your Supabase SQL 
 4. `004_workout_sessions_progressive_overload.sql`
 5. `005_exercise_categories_and_split_preferences.sql`
 6. `006_nutrition_food_logging.sql`
+7. `007_training_editor_and_workout_session_fields.sql`
 
 They create:
 

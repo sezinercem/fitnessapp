@@ -163,7 +163,19 @@ export const plannedExerciseSchema = z.object({
   trainingDayId: z.string().uuid(),
   exerciseName: requiredText(100),
   muscleGroups: text(200),
+  muscleGroup: text(100).optional(),
   confirmMismatch: z.coerce.boolean().optional(),
+  sets: z.coerce.number().int().min(1).max(12),
+  reps: text(40),
+  targetWeight: text(50).optional(),
+  restSeconds: z.coerce.number().int().min(0).max(900),
+  notes: text(400).optional()
+});
+
+export const plannedExerciseUpdateSchema = z.object({
+  exerciseName: requiredText(100),
+  muscleGroup: text(100),
+  muscleGroups: text(200).optional(),
   sets: z.coerce.number().int().min(1).max(12),
   reps: text(40),
   targetWeight: text(50).optional(),

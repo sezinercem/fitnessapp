@@ -108,6 +108,7 @@ export type PlannedExercise = {
   id: string;
   training_day_id: string;
   exercise_name: string;
+  muscle_group?: string | null;
   muscle_groups: string[];
   workout_category?: string | null;
   sets: number;
@@ -247,6 +248,7 @@ export type WorkoutSession = {
   status: "started" | "completed" | "skipped";
   started_at: string;
   completed_at: string | null;
+  duration_seconds?: number | null;
   notes: string | null;
 };
 
@@ -255,10 +257,12 @@ export type WorkoutSessionExercise = {
   workout_session_id: string;
   planned_exercise_id: string | null;
   exercise_name: string;
+  muscle_group?: string | null;
   exercise_order: number;
   status: "started" | "completed" | "skipped";
   planned_sets: number;
   planned_reps: string | null;
+  rest_seconds?: number | null;
   notes: string | null;
 };
 

@@ -3,12 +3,11 @@ import { BookOpen, Dumbbell, History, Plus, Save, Trash2, WandSparkles } from "l
 import { AppShell } from "@/components/app-shell";
 import { Button, Card, EmptyState } from "@/components/ui";
 import { ConfirmButton } from "@/components/confirm-button";
-import { ExerciseAddForm } from "@/components/workout/exercise-add-form";
-import { addDayAction, addExerciseAction, completeWorkoutAction, createBlankPlanAction, createPlanFromTemplateAction, deleteExerciseAction, deletePlanAction, deletePlannedExerciseAction, regenerateWeeklyPlanAction, updateDayAction, updateExerciseAction, updatePlanAction, updateTrainingDayAction } from "@/lib/actions";
+import { ProgrammeEditor } from "@/components/training/programme-editor";
+import { addDayAction, addExerciseAction, completeWorkoutAction, createBlankPlanAction, createPlanFromTemplateAction, deleteExerciseAction, deletePlanAction, updateDayAction, updateExerciseAction, updatePlanAction } from "@/lib/actions";
 import { getAuthedData, getGuidedData } from "@/lib/data";
 import { planTemplates } from "@/lib/sample-data";
 import type { TrainingDay, WeeklyTrainingPlan, WorkoutDay } from "@/lib/types";
-import type { WorkoutCategory } from "@/lib/exercise-catalog";
 
 export default async function PlanPage() {
   const { plan } = await getAuthedData();
@@ -16,7 +15,6 @@ export default async function PlanPage() {
   const days = ((plan?.workout_days ?? []) as WorkoutDay[]).sort((a, b) => a.sort_order - b.sort_order);
   const guidedPlan = weeklyPlan as WeeklyTrainingPlan | null;
   const guidedDays = ((guidedPlan?.training_days ?? []) as TrainingDay[]).sort((a, b) => a.day_index - b.day_index);
-  const weekDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
   return (
     <AppShell>
@@ -54,70 +52,8 @@ export default async function PlanPage() {
               <div className="rounded-lg border border-line bg-slate-50 p-4"><p className="text-xs uppercase tracking-[0.16em] text-slate-500">Difficulty</p><p className="mt-2 font-black">{guidedPlan.difficulty_level}</p></div>
               <div className="rounded-lg border border-line bg-slate-50 p-4"><p className="text-xs uppercase tracking-[0.16em] text-slate-500">Expected outcome</p><p className="mt-2 text-sm text-slate-600">{guidedPlan.expected_outcome}</p></div>
             </div>
-            <form action={regenerateWeeklyPlanAction} className="mt-5">
-              <Button><Save className="h-4 w-4" />Regenerate from onboarding days</Button>
-            </form>
           </Card>
-
-          {guidedDays.map((day) => (
-            <Card key={day.id}>
-              <div className="grid gap-5 lg:grid-cols-[0.85fr_1.15fr]">
-                <div>
-                  <p className={`text-sm font-bold uppercase tracking-[0.18em] ${day.is_rest_day ? "text-slate-500" : "text-emerald-600"}`}>{day.day_of_week}</p>
-                  <form action={updateTrainingDayAction.bind(null, day.id)} className="mt-3 grid gap-3">
-                    <select name="dayOfWeek" defaultValue={day.day_of_week}>
-                      {weekDays.map((weekDay) => <option key={weekDay}>{weekDay}</option>)}
-                    </select>
-                    <select name="isRestDay" defaultValue={String(day.is_rest_day)}>
-                      <option value="false">Training day</option>
-                      <option value="true">Rest/recovery day</option>
-                    </select>
-                    <select name="workoutCategory" defaultValue={day.workout_category ?? "full_body"}>
-                      <option value="push">Push</option>
-                      <option value="pull">Pull</option>
-                      <option value="legs">Legs</option>
-                      <option value="upper">Upper Body</option>
-                      <option value="lower">Lower Body</option>
-                      <option value="full_body">Full Body</option>
-                      <option value="cardio">Cardio</option>
-                      <option value="mobility">Mobility</option>
-                      <option value="core">Core</option>
-                    </select>
-                    <input name="trainingFocus" defaultValue={day.training_focus} placeholder="Training focus, e.g. Lower Body Strength" />
-                    <input name="estimatedDuration" type="number" defaultValue={day.estimated_duration} placeholder="Estimated duration, e.g. 45" />
-                    <textarea name="whyItExists" defaultValue={day.why_it_exists} placeholder="Explain why this day exists, e.g. Builds stronger legs and glutes." />
-                    <textarea name="recoveryNotes" defaultValue={day.recovery_notes ?? ""} placeholder="Recovery notes, e.g. Keep two reps in reserve." />
-                    <Button><Save className="h-4 w-4" />Save day / move workout</Button>
-                  </form>
-                  <div className="mt-4 rounded-lg border border-line bg-slate-50 p-4">
-                    <p className="font-black">Main muscles trained</p>
-                    <p className="mt-1 text-sm text-slate-500">{day.main_muscles?.join(", ") || "Add muscles in the notes"}</p>
-                    <p className="mt-3 text-sm text-slate-500">{day.is_rest_day ? "Rest day" : "Workout day"} · {day.estimated_duration} minutes</p>
-                  </div>
-                </div>
-                <div>
-                  <h3 className="text-xl font-black">Exercises</h3>
-                  <div className="mt-3 grid gap-3">
-                    {(day.planned_exercises ?? []).sort((a, b) => a.sort_order - b.sort_order).map((exercise) => (
-                      <div key={exercise.id} className="rounded-lg border border-line bg-slate-50 p-4">
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                          <div>
-                            <p className="font-black">{exercise.exercise_name}</p>
-                            <p className="mt-1 text-sm text-slate-500">{exercise.sets} sets · {exercise.reps} reps · rest {exercise.rest_seconds}s · {exercise.target_weight}</p>
-                            <p className="mt-1 text-sm text-slate-500">{exercise.notes}</p>
-                          </div>
-                          <form action={deletePlannedExerciseAction.bind(null, exercise.id)}>
-                            <button className="inline-flex items-center gap-2 rounded-md border border-line px-3 py-2 text-sm font-bold hover:border-emerald-300"><Trash2 className="h-4 w-4" />Remove</button>
-                          </form>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  {!day.is_rest_day ? <ExerciseAddForm trainingDayId={day.id} category={(day.workout_category ?? "full_body") as WorkoutCategory} /> : null}
-                </div>
-              </div>
-            </Card>
-          ))}
+          <ProgrammeEditor plan={guidedPlan} days={guidedDays} />
         </div>
       ) : null}
 
